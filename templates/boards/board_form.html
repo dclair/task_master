@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block head_title %}Nuevo Tablero | Task Master{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'boards:board_list' %}" class="text-decoration-none">Mis Tableros</a></li>
+                <li class="breadcrumb-item active">Nuevo Tablero</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow border-0 rounded-4 mt-3">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-4"><i class="bi bi-plus-square me-2 text-primary"></i>Crear Nuevo Tablero</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-uppercase text-muted">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold shadow-sm">
+                            Crear Tablero
+                        </button>
+                        <a href="{% url 'boards:board_list' %}" class="btn btn-link text-muted text-decoration-none small">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

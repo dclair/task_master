@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block head_title %}Mis Tableros | Task Master{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h2 class="fw-800 mb-0">Mis Tableros</h2>
+        <p class="text-muted mb-0">Gestiona tus proyectos y tareas</p>
+    </div>
+    <a href="{% url 'boards:board_create' %}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+        <i class="bi bi-plus-lg me-2"></i>Nuevo Tablero
+    </a>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for board in boards %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 rounded-4 card-hover">
+            <div class="card-body p-4 d-flex flex-column">
+                <div class="mb-3">
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3">Tablero</span>
+                </div>
+                <h5 class="card-title fw-bold text-dark mb-2">{{ board.title }}</h5>
+                <p class="card-text text-muted small flex-grow-1">
+                    {{ board.description|default:"Sin descripción adicional."|truncatechars:100 }}
+                </p>
+                
+                <hr class="my-3 opacity-25">
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted extra-small">
+                        <i class="bi bi-calendar3 me-1"></i> {{ board.created_at|date:"d M, Y" }}
+                    </div>
+                    <a href="{% url 'boards:board_detail' board.pk %}" class="btn btn-sm btn-light rounded-pill border" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                        Abrir <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="bg-white p-5 rounded-4 shadow-sm border border-dashed">
+            <i class="bi bi-layout-three-columns display-1 text-muted opacity-25"></i>
+            <h4 class="mt-4 fw-bold">¿Empezamos algo nuevo?</h4>
+            <p class="text-muted">Aún no has creado ningún tablero de tareas.</p>
+            <a href="{% url 'boards:board_create' %}" class="btn btn-primary rounded-pill px-4 mt-2">
+                Crear mi primer tablero
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

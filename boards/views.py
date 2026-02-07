@@ -1,0 +1,116 @@
+from django.shortcuts import render
+from django.urls import reverse_lazy
+from django.views.generic import (
+    ListView,
+    CreateView,
+    DetailView,
+    UpdateView,
+    DeleteView,
+)
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.views.generic import ListView, CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from .forms import BoardForm
+from django.shortcuts import get_object_or_404, redirect
+from .models import Board, TaskList, Task
+from .forms import TaskListForm, TaskForm
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
+
+# Vista para el Registro de Usuarios
+class SignUpView(CreateView):
+    form_class = UserCreationForm
+    success_url = reverse_lazy("login")
+    template_name = "registration/signup.html"
+
+
+# Vista para listar los Tableros del usuario
+class BoardListView(LoginRequiredMixin, ListView):
+    model = Board
+    template_name = "boards/home.html"
+    context_object_name = "boards"
+
+    def get_queryset(self):
+        # Solo mostramos los tableros que pertenecen al usuario activo
+        return Board.objects.filter(owner=self.request.user)
+
+
+# Vista para crear un Tablero
+class BoardCreateView(LoginRequiredMixin, CreateView):
+    model = Board
+    form_class = BoardForm
+    template_name = "boards/board_form.html"
+    success_url = reverse_lazy("boards:board_list")
+
+    def form_valid(self, form):
+        # Asignamos el usuario actual como dueño del tablero
+        form.instance = form.save(commit=False)
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
+
+# Vista para ver un Tablero en detalle
+class BoardDetailView(LoginRequiredMixin, DetailView):
+    model = Board
+    template_name = "boards/board_detail.html"
+    context_object_name = "board"
+
+    def get_object(self, queryset=None):
+        board = super().get_object(queryset)
+        # Verificación de propiedad: si no es el dueño, fuera.
+        if board.owner != self.request.user:
+            raise PermissionDenied
+        return board
+
+
+# Vista para añadir una Lista
+def add_list(request, board_id):
+    board = get_object_or_404(Board, id=board_id, owner=request.user)
+    if request.method == "POST":
+        form = TaskListForm(request.POST)
+        if form.is_valid():
+            new_list = form.save(commit=False)
+            new_list.board = board
+            # Calculamos la posición (la última)
+            new_list.position = board.lists.count()
+            new_list.save()
+    return redirect("boards:board_detail", pk=board_id)
+
+
+# Vista para añadir una Tarea
+def add_task(request, list_id):
+    task_list = get_object_or_404(TaskList, id=list_id, board__owner=request.user)
+    if request.method == "POST":
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.task_list = task_list
+            task.position = task_list.tasks.count()
+            task.save()
+    return redirect("boards:board_detail", pk=task_list.board.id)
+
+
+# Vista para eliminar una Lista
+@login_required
+@require_POST
+def delete_list(request, list_id):
+    # Buscamos la lista asegurándonos de que el tablero pertenece al usuario
+    task_list = get_object_or_404(TaskList, id=list_id, board__owner=request.user)
+    board_id = task_list.board.id
+    task_list.delete()
+    return redirect("boards:board_detail", pk=board_id)
+
+
+# Vista para eliminar una Tarea
+@login_required
+@require_POST
+def delete_task(request, task_id):
+    # Buscamos la tarea validando que el tablero pertenezca al usuario actual
+    task = get_object_or_404(Task, id=task_id, task_list__board__owner=request.user)
+    board_id = task.task_list.board.id
+    task.delete()
+    return redirect("boards:board_detail", pk=board_id)
