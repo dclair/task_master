@@ -1,6 +1,11 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm
 from django.core.exceptions import ValidationError
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from email.mime.image import MIMEImage
+import os
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from .models import Board, TaskList, Task, UserProfile
@@ -106,6 +111,39 @@ class UserUpdateForm(forms.ModelForm):
         if User.objects.filter(username__iexact=username).exclude(pk=self.instance.pk).exists():
             raise ValidationError(_("Ese nombre de usuario ya existe."))
         return username
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    def send_mail(
+        self,
+        subject_template_name,
+        email_template_name,
+        context,
+        from_email,
+        to_email,
+        html_email_template_name=None,
+    ):
+        subject = render_to_string(subject_template_name, context).strip()
+        text_body = render_to_string(email_template_name, context)
+        html_body = ""
+        if html_email_template_name:
+            html_body = render_to_string(html_email_template_name, context)
+
+        email = EmailMultiAlternatives(subject, text_body, from_email, [to_email])
+        if html_body:
+            email.attach_alternative(html_body, "text/html")
+
+        logo_path = os.path.join(settings.BASE_DIR, "static", "img", "taskmaster.png")
+        try:
+            with open(logo_path, "rb") as f:
+                img = MIMEImage(f.read())
+                img.add_header("Content-ID", "<taskmaster-logo>")
+                img.add_header("Content-Disposition", "inline", filename="taskmaster.png")
+                email.attach(img)
+        except FileNotFoundError:
+            pass
+
+        email.send(fail_silently=False)
 
 
 # Formulario para crear una Lista de Tareas
