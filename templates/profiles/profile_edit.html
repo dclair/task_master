@@ -65,6 +65,13 @@
                         {% endif %}
                     </div>
 
+                    <div class="form-check mb-3">
+                        {{ profile_form.notify_task_assigned }}
+                        <label class="form-check-label small text-muted" for="{{ profile_form.notify_task_assigned.id_for_label }}">
+                            Recibir emails cuando me asignen tareas
+                        </label>
+                    </div>
+
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary rounded-pill px-4">Guardar</button>
                         <a href="{% url 'boards:profile' %}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>

@@ -139,6 +139,28 @@ def send_invite_email(request, invite):
     )
 
 
+def send_task_assigned_email(request, task, user):
+    board = task.task_list.board
+    board_url = request.build_absolute_uri(
+        reverse("boards:board_detail", args=[board.id])
+    )
+    context = {
+        "user": user,
+        "task": task,
+        "board": board,
+        "board_url": board_url,
+    }
+    subject = f"Task Master | Nueva tarea asignada: {task.title}"
+    html_body = render_to_string("registration/task_assigned_email.html", context)
+    text_body = f"Tienes una nueva tarea en {board.title}: {task.title}. {board_url}"
+    send_html_email(
+        subject=subject,
+        text_body=text_body,
+        html_body=html_body,
+        to_emails=[user.email],
+    )
+
+
 def send_html_email(subject, text_body, html_body, to_emails):
     email = EmailMultiAlternatives(
         subject,
@@ -467,6 +489,13 @@ def add_task(request, list_id):
                     board=task_list.board, user_id__in=assigned_ids
                 ).values_list("user_id", flat=True)
                 task.assigned_to.set(list(valid_ids))
+                for user in User.objects.filter(id__in=valid_ids).exclude(email=""):
+                    try:
+                        profile, _ = UserProfile.objects.get_or_create(user=user)
+                        if profile.notify_task_assigned:
+                            send_task_assigned_email(request, task, user)
+                    except Exception:
+                        logger.exception("Fallo al enviar email de asignación")
 
             # --- PARTE NUEVA PARA ETIQUETAS ---
             selected_tags = request.POST.getlist("tags")  # Captura los checkboxes
@@ -547,6 +576,7 @@ def move_task(request):
 @require_POST
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
+    prev_assigned = set(task.assigned_to.values_list("id", flat=True))
     membership = BoardMembership.objects.filter(
         board=task.task_list.board, user=request.user
     ).first()
@@ -563,6 +593,15 @@ def edit_task(request, task_id):
             board=task.task_list.board, user_id__in=assigned_ids
         ).values_list("user_id", flat=True)
         task.assigned_to.set(list(valid_ids))
+        new_assigned = set(valid_ids) - prev_assigned
+        if new_assigned:
+            for user in User.objects.filter(id__in=new_assigned).exclude(email=""):
+                try:
+                    profile, _ = UserProfile.objects.get_or_create(user=user)
+                    if profile.notify_task_assigned:
+                        send_task_assigned_email(request, task, user)
+                except Exception:
+                    logger.exception("Fallo al enviar email de asignación")
     else:
         task.assigned_to.clear()
 

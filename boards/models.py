@@ -124,6 +124,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    notify_task_assigned = models.BooleanField(default=True)
 
     def avatar_url(self):
         if self.avatar:

@@ -67,7 +67,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = UserProfile
-        fields = ("bio", "avatar")
+        fields = ("bio", "avatar", "notify_task_assigned")
         widgets = {
             "bio": forms.Textarea(
                 attrs={"class": "form-control rounded-4", "rows": 3}
