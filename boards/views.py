@@ -27,7 +27,7 @@ from django.urls import reverse_lazy
 from .forms import BoardForm, SignUpForm, CustomAuthenticationForm, ProfileForm, UserUpdateForm
 from .tokens import activation_token_generator
 from django.shortcuts import get_object_or_404, redirect
-from .models import Board, TaskList, Task, Tag, UserProfile
+from .models import Board, TaskList, Task, Tag, UserProfile, BoardMembership
 from .forms import TaskListForm, TaskForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -266,8 +266,8 @@ class BoardListView(LoginRequiredMixin, ListView):
     context_object_name = "boards"
 
     def get_queryset(self):
-        # Solo mostramos los tableros que pertenecen al usuario activo
-        return Board.objects.filter(owner=self.request.user)
+        # Tableros donde el usuario es miembro
+        return Board.objects.filter(memberships__user=self.request.user).distinct()
 
 
 # Vista para crear un Tablero
@@ -276,6 +276,15 @@ class BoardCreateView(LoginRequiredMixin, CreateView):
     form_class = BoardForm
     template_name = "boards/board_form.html"
     success_url = reverse_lazy("boards:board_list")
+
+    def form_valid(self, form):
+        board = form.save(commit=False)
+        board.owner = self.request.user
+        board.save()
+        BoardMembership.objects.get_or_create(
+            board=board, user=self.request.user, defaults={"role": "owner"}
+        )
+        return redirect(self.success_url)
 
     def form_valid(self, form):
         # Asignamos el usuario actual como dueño del tablero
@@ -292,7 +301,9 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
 
     def get_object(self, queryset=None):
         board = super().get_object(queryset)
-        if board.owner != self.request.user:
+        if not BoardMembership.objects.filter(
+            board=board, user=self.request.user
+        ).exists():
             raise PermissionDenied
         return board
 
@@ -334,6 +345,11 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
         context["total_tasks"] = (
             total_count  # Corregido: antes intentabas usar total_tasks sin definirlo
         )
+        membership = BoardMembership.objects.filter(
+            board=board, user=self.request.user
+        ).first()
+        context["user_role"] = membership.role if membership else None
+        context["memberships"] = board.memberships.select_related("user").all()
 
         # Etiquetas para el resumen superior y el modal
         context["board_tags"] = (
@@ -349,7 +365,10 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
 
 # Vista para añadir una Lista
 def add_list(request, board_id):
-    board = get_object_or_404(Board, id=board_id, owner=request.user)
+    board = get_object_or_404(Board, id=board_id)
+    membership = BoardMembership.objects.filter(board=board, user=request.user).first()
+    if not membership or membership.role not in ["owner", "editor"]:
+        raise PermissionDenied
     if request.method == "POST":
         form = TaskListForm(request.POST)
         if form.is_valid():
@@ -363,7 +382,12 @@ def add_list(request, board_id):
 
 # funcion para añadir una Tarea
 def add_task(request, list_id):
-    task_list = get_object_or_404(TaskList, id=list_id, board__owner=request.user)
+    task_list = get_object_or_404(TaskList, id=list_id)
+    membership = BoardMembership.objects.filter(
+        board=task_list.board, user=request.user
+    ).first()
+    if not membership or membership.role not in ["owner", "editor"]:
+        raise PermissionDenied
     if request.method == "POST":
         form = TaskForm(request.POST)
         if form.is_valid():
@@ -384,7 +408,12 @@ def add_task(request, list_id):
 @require_POST
 def delete_list(request, list_id):
     # Buscamos la lista asegurándonos de que el tablero pertenece al usuario
-    task_list = get_object_or_404(TaskList, id=list_id, board__owner=request.user)
+    task_list = get_object_or_404(TaskList, id=list_id)
+    membership = BoardMembership.objects.filter(
+        board=task_list.board, user=request.user
+    ).first()
+    if not membership or membership.role not in ["owner", "editor"]:
+        raise PermissionDenied
     board_id = task_list.board.id
     task_list.delete()
     return redirect("boards:board_detail", pk=board_id)
@@ -395,7 +424,12 @@ def delete_list(request, list_id):
 @require_POST
 def delete_task(request, task_id):
     # Buscamos la tarea validando que el tablero pertenezca al usuario actual
-    task = get_object_or_404(Task, id=task_id, task_list__board__owner=request.user)
+    task = get_object_or_404(Task, id=task_id)
+    membership = BoardMembership.objects.filter(
+        board=task.task_list.board, user=request.user
+    ).first()
+    if not membership or membership.role not in ["owner", "editor"]:
+        raise PermissionDenied
     board_id = task.task_list.board.id
     task.delete()
     return redirect("boards:board_detail", pk=board_id)
@@ -410,10 +444,15 @@ def move_task(request):
         new_list_id = data.get("new_list_id")
 
         # Buscamos la tarea y la nueva lista
-        task = get_object_or_404(Task, id=task_id, task_list__board__owner=request.user)
-        new_list = get_object_or_404(
-            TaskList, id=new_list_id, board__owner=request.user
-        )
+        task = get_object_or_404(Task, id=task_id)
+        new_list = get_object_or_404(TaskList, id=new_list_id)
+        membership = BoardMembership.objects.filter(
+            board=task.task_list.board, user=request.user
+        ).first()
+        if not membership or membership.role not in ["owner", "editor"]:
+            raise PermissionDenied
+        if new_list.board_id != task.task_list.board_id:
+            raise PermissionDenied
 
         task.task_list = new_list
         task.save()
@@ -426,7 +465,12 @@ def move_task(request):
 @login_required
 @require_POST
 def edit_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id, task_list__board__owner=request.user)
+    task = get_object_or_404(Task, id=task_id)
+    membership = BoardMembership.objects.filter(
+        board=task.task_list.board, user=request.user
+    ).first()
+    if not membership or membership.role not in ["owner", "editor"]:
+        raise PermissionDenied
 
     # Actualizamos los campos con lo que viene del formulario
     task.title = request.POST.get("title")
@@ -445,3 +489,62 @@ def edit_task(request, task_id):
     selected_tags = request.POST.getlist("tags")
     task.tags.set(selected_tags)  # Actualiza la lista de etiquetas
     return redirect("boards:board_detail", pk=task.task_list.board.id)
+
+
+def _require_owner(board, user):
+    membership = BoardMembership.objects.filter(board=board, user=user).first()
+    if not membership or membership.role != "owner":
+        raise PermissionDenied
+
+
+@login_required
+@require_POST
+def add_member(request, board_id):
+    board = get_object_or_404(Board, id=board_id)
+    _require_owner(board, request.user)
+    identifier = request.POST.get("identifier", "").strip()
+    role = request.POST.get("role", "viewer")
+    if role not in ["owner", "editor", "viewer"]:
+        role = "viewer"
+
+    user = (
+        User.objects.filter(username__iexact=identifier).first()
+        or User.objects.filter(email__iexact=identifier).first()
+    )
+    if not user:
+        messages.error(request, "No existe un usuario con ese nombre o email.")
+        return redirect("boards:board_detail", pk=board_id)
+
+    BoardMembership.objects.update_or_create(
+        board=board, user=user, defaults={"role": role}
+    )
+    messages.success(request, "Miembro actualizado.")
+    return redirect("boards:board_detail", pk=board_id)
+
+
+@login_required
+@require_POST
+def update_member_role(request, board_id, membership_id):
+    board = get_object_or_404(Board, id=board_id)
+    _require_owner(board, request.user)
+    membership = get_object_or_404(BoardMembership, id=membership_id, board=board)
+    role = request.POST.get("role", membership.role)
+    if role in ["owner", "editor", "viewer"]:
+        membership.role = role
+        membership.save()
+    messages.success(request, "Rol actualizado.")
+    return redirect("boards:board_detail", pk=board_id)
+
+
+@login_required
+@require_POST
+def remove_member(request, board_id, membership_id):
+    board = get_object_or_404(Board, id=board_id)
+    _require_owner(board, request.user)
+    membership = get_object_or_404(BoardMembership, id=membership_id, board=board)
+    if membership.user_id == board.owner_id:
+        messages.error(request, "No puedes eliminar al propietario del tablero.")
+        return redirect("boards:board_detail", pk=board_id)
+    membership.delete()
+    messages.success(request, "Miembro eliminado.")
+    return redirect("boards:board_detail", pk=board_id)

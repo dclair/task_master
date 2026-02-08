@@ -17,4 +17,15 @@ urlpatterns = [
     path("task/<int:task_id>/delete/", views.delete_task, name="delete_task"),
     path("task/move/", views.move_task, name="move_task"),
     path("task/<int:task_id>/edit/", views.edit_task, name="edit_task"),
+    path("<int:board_id>/members/add/", views.add_member, name="add_member"),
+    path(
+        "<int:board_id>/members/<int:membership_id>/role/",
+        views.update_member_role,
+        name="update_member_role",
+    ),
+    path(
+        "<int:board_id>/members/<int:membership_id>/remove/",
+        views.remove_member,
+        name="remove_member",
+    ),
 ]

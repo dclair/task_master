@@ -1,9 +1,20 @@
 from django.contrib import admin
-from .models import Board, TaskList, Task, Tag
+from .models import Board, TaskList, Task, Tag, BoardMembership, UserProfile
 
 admin.site.register(Board)
 admin.site.register(TaskList)
 admin.site.register(Task)
+@admin.register(BoardMembership)
+class BoardMembershipAdmin(admin.ModelAdmin):
+    list_display = ("board", "user", "role", "created_at")
+    list_filter = ("role", "board")
+    search_fields = ("board__title", "user__username", "user__email")
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "avatar")
+    search_fields = ("user__username", "user__email")
 
 
 @admin.register(Tag)
