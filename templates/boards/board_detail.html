@@ -158,7 +158,9 @@
         </div>
     </div>
      
-    <div class="section-box d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="section-box mb-4">
+        <div class="section-title text-uppercase text-muted small fw-bold mb-2">Filtros</div>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
         <div class="d-flex flex-wrap gap-2 align-items-center">
             {% for tag in board_tags %}
             <a href="?tag={{ tag.id }}" class="badge rounded-pill border text-decoration-none text-dark d-flex align-items-center px-3 py-2 shadow-sm" style="background-color: {{ tag.color }}; font-size: 0.65rem;">
@@ -173,21 +175,14 @@
             </a>
             {% endif %}
         </div>
-        <div class="section-title text-uppercase text-muted small fw-bold mb-0">Filtros</div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'boards:export_tasks_csv' board.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-                <i class="bi bi-filetype-csv me-1"></i>CSV
-            </a>
-            <a href="{% url 'boards:export_tasks_json' board.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-                <i class="bi bi-filetype-json me-1"></i>JSON
-            </a>
-        </div>
         <div class="position-relative" style="min-width: 200px;">
             <input type="text" id="taskSearch" class="form-control form-control-sm rounded-pill ps-4 border-0 shadow-sm" placeholder="Buscar tarea...">
             <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted extra-small"></i>
         </div>
+        </div>
     </div>
     <div class="priority-summary d-flex flex-wrap gap-2 align-items-center mt-2">
+        <div class="text-muted extra-small fw-bold text-uppercase me-2">Prioridad</div>
         <span class="badge rounded-pill text-bg-danger extra-small priority-filter" role="button" tabindex="0" data-priority="high">
             Alta: <span id="prio-high-count">0</span>
         </span>
@@ -197,6 +192,15 @@
         <span class="badge rounded-pill text-bg-success extra-small priority-filter" role="button" tabindex="0" data-priority="low">
             Baja: <span id="prio-low-count">0</span>
         </span>
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <div class="text-muted extra-small fw-bold text-uppercase me-1">Exportar</div>
+            <a href="{% url 'boards:export_tasks_csv' board.id %}" class="btn btn-xs btn-outline-secondary rounded-pill px-3">
+                <i class="bi bi-filetype-csv me-1"></i>CSV
+            </a>
+            <a href="{% url 'boards:export_tasks_json' board.id %}" class="btn btn-xs btn-outline-secondary rounded-pill px-3">
+                <i class="bi bi-filetype-json me-1"></i>JSON
+            </a>
+        </div>
     </div>
 </div>
 
