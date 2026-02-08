@@ -9,7 +9,43 @@ document.addEventListener('DOMContentLoaded', function() {
         if (txt) txt.textContent = percent + '%';
     };
 
+    let activePriority = null;
+    let searchTerm = '';
+
+    const applyFilters = () => {
+        const cards = document.querySelectorAll('.task-card');
+        cards.forEach(card => {
+            const title = card.getAttribute('data-title') || '';
+            const desc = card.getAttribute('data-desc') || '';
+            const text = (title + desc).toLowerCase();
+            const prio = (card.getAttribute('data-prio') || '').toLowerCase();
+
+            const matchesSearch = !searchTerm || text.includes(searchTerm);
+            const matchesPriority = !activePriority || prio.includes(activePriority);
+            card.style.display = (matchesSearch && matchesPriority) ? 'block' : 'none';
+        });
+    };
+
+    const updatePrioritySummary = () => {
+        const cards = document.querySelectorAll('.task-card');
+        let high = 0, medium = 0, low = 0;
+        cards.forEach(card => {
+            const prio = (card.getAttribute('data-prio') || '').toLowerCase();
+            if (prio.includes('high') || prio.includes('alta')) high += 1;
+            else if (prio.includes('medium') || prio.includes('media')) medium += 1;
+            else if (prio.includes('low') || prio.includes('baja')) low += 1;
+        });
+        const highEl = document.getElementById('prio-high-count');
+        const mediumEl = document.getElementById('prio-medium-count');
+        const lowEl = document.getElementById('prio-low-count');
+        if (highEl) highEl.textContent = high;
+        if (mediumEl) mediumEl.textContent = medium;
+        if (lowEl) lowEl.textContent = low;
+    };
+
     updateProgressBar();
+    updatePrioritySummary();
+    applyFilters();
 
     const taskModal = document.getElementById('taskModal');
     if (taskModal) {
@@ -43,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
             group: 'kanban', animation: 150, handle: '.task-grip, .task-title',
             onEnd: function (evt) {
                 updateProgressBar();
+                updatePrioritySummary();
                 const taskId = evt.item.getAttribute('data-taskid');
                 const column = evt.to.closest('.kanban-column');
                 const newListId = column.querySelector('.open-task-modal').getAttribute('data-listid');
@@ -58,13 +95,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('taskSearch');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            document.querySelectorAll('.task-card').forEach(card => {
-                const text = (card.getAttribute('data-title') + card.getAttribute('data-desc')).toLowerCase();
-                card.style.display = text.includes(term) ? "block" : "none";
-            });
+            searchTerm = e.target.value.toLowerCase();
+            applyFilters();
         });
     }
+
+    document.querySelectorAll('.priority-filter').forEach(badge => {
+        const activate = () => {
+            const prio = badge.getAttribute('data-priority');
+            activePriority = (activePriority === prio) ? null : prio;
+            document.querySelectorAll('.priority-filter').forEach(b => {
+                const isActive = activePriority && b.getAttribute('data-priority') === activePriority;
+                b.classList.toggle('active', !!isActive);
+                b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+            applyFilters();
+        };
+        badge.addEventListener('click', activate);
+        badge.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                activate();
+            }
+        });
+    });
 });
 
 function getCookie(name) {
