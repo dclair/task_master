@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     
-    // --- 1. LÓGICA DE LOS MODALES (creación y edición) ---
+    // --- 1. LÓGICA DE LOS MODALES (Creación y Edición) ---
     const taskModal = document.getElementById('taskModal');
     
     if (taskModal) {
@@ -20,14 +20,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.className = 'btn btn-primary rounded-pill w-100 fw-bold';
 
                 const fields = ['title', 'description', 'priority', 'due_date'];
-                const dataMap = {'title': 'data-title', 'description': 'data-desc', 'priority': 'data-prio', 'due_date': 'data-date'};
+                const dataMap = {
+                    'title': 'data-title', 
+                    'description': 'data-desc', 
+                    'priority': 'data-prio', 
+                    'due_date': 'data-date'
+                };
 
                 fields.forEach(field => {
                     const input = form.querySelector(`[name="${field}"]`);
                     if (input) input.value = trigger.getAttribute(dataMap[field]) || '';
                 });
 
-                // --- NUEVO: Marcar etiquetas existentes ---
+                // Marcar etiquetas existentes
                 const tagIds = (trigger.getAttribute('data-tags') || '').split(',').filter(id => id);
                 tagIds.forEach(id => {
                     const cb = form.querySelector(`[name="tags"][value="${id}"]`);
@@ -44,29 +49,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.className = 'btn btn-success rounded-pill w-100 fw-bold';
                 
                 form.reset();
-                // Importante: Aseguramos que los checkboxes de etiquetas se limpien también
-                form.querySelectorAll('[name="tags"]').forEach(cb => cb.checked = false);
-                
                 const listId = trigger.getAttribute('data-listid');
-                // Corregido el guion: de add_task a add-task/
                 form.action = `/boards/list/${listId}/add-task/`;
             }
         });
     }
 
-    // --- 2. LÓGICA DE DRAG & DROP (Con protección de filtro) ---
+    // --- 2. LÓGICA DE DRAG & DROP (Con actualización de progreso) ---
     const containers = document.querySelectorAll('.tasks-container');
     const isFiltered = new URLSearchParams(window.location.search).has('tag');
 
-    // Solo activamos Sortable si NO hay filtros activos
     if (!isFiltered) {
         containers.forEach(container => {
             new Sortable(container, {
                 group: 'kanban',
                 animation: 150,
-                ghostClass: 'sortable-ghost',
-                dragClass: 'sortable-drag',
                 handle: '.task-card',
+                ghostClass: 'sortable-ghost',
+                
                 onEnd: function (evt) {
                     const taskId = evt.item.getAttribute('data-taskid');
                     const column = evt.to.closest('.kanban-column');
@@ -81,19 +81,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         body: JSON.stringify({ task_id: taskId, new_list_id: newListId })
                     })
                     .then(response => {
-                        if (!response.ok) { alert('Error al mover la tarea.'); location.reload(); }
+                        if (response.ok) {
+                            // Actualización visual inmediata
+                            updateProgressBar();
+                        } else {
+                            alert('Error al mover la tarea.');
+                            location.reload();
+                        }
                     });
                 }
             });
         });
     }
 
-    // --- 3. EVITAR CONFLICTO CLIC (Borrar vs Editar) ---
-    document.querySelectorAll('.btn-delete-task').forEach(btn => {
-        btn.addEventListener('click', e => e.stopPropagation());
-    });
-
-    // --- 4. BUSCADOR EN TIEMPO REAL ---
+    // --- 3. BUSCADOR EN TIEMPO REAL ---
     const searchInput = document.getElementById('taskSearch');
     if (searchInput) {
         searchInput.addEventListener('input', function(e) {
@@ -101,24 +102,51 @@ document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.task-card');
 
             cards.forEach(card => {
-                // Buscamos en el título y en la descripción (sacados de los data-attributes)
-                const title = card.getAttribute('data-title').toLowerCase();
-                const desc = card.getAttribute('data-desc').toLowerCase();
+                const title = (card.getAttribute('data-title') || '').toLowerCase();
+                const desc = (card.getAttribute('data-desc') || '').toLowerCase();
 
                 if (title.includes(searchTerm) || desc.includes(searchTerm)) {
-                    card.style.display = "block"; // Se muestra si coincide
-                    card.classList.add('animate__animated', 'animate__fadeIn'); // Opcional: efecto visual
+                    card.style.display = "block";
                 } else {
-                    card.style.display = "none"; // Se oculta si no coincide
+                    card.style.display = "none";
                 }
             });
-
-            // Opcional: Ocultar columnas vacías si no hay resultados (avísame si lo quieres)
         });
     }
 
+    // --- 4. EVITAR CONFLICTO CLIC (Borrar vs Editar) ---
+    document.querySelectorAll('.btn-delete-task').forEach(btn => {
+        btn.addEventListener('click', e => e.stopPropagation());
+    });
+
 });
 
+// --- FUNCIONES AUXILIARES (Fuera del DOMContentLoaded para ser accesibles) ---
+
+/**
+ * Recalcula el progreso basándose en las columnas marcadas con data-is-done
+ */
+function updateProgressBar() {
+    const allTasks = document.querySelectorAll('.task-card').length;
+    const doneTasks = document.querySelectorAll('.kanban-column[data-is-done="true"] .task-card').length;
+    
+    const percentage = allTasks > 0 ? Math.round((doneTasks / allTasks) * 100) : 0;
+
+    const progressBar = document.getElementById('main-progress-bar');
+    const progressText = document.getElementById('progress-text');
+
+    if (progressBar) {
+        progressBar.style.width = percentage + '%';
+        progressBar.setAttribute('aria-valuenow', percentage);
+    }
+    if (progressText) {
+        progressText.textContent = percentage + '%';
+    }
+}
+
+/**
+ * Obtiene el token CSRF de las cookies
+ */
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

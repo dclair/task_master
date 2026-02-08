@@ -218,3 +218,14 @@ a.badge:hover {
 .task-card[style*="display: none"] {
     margin-bottom: 0 !important;
 }
+
+/* Estilos para la barra de progreso de tareas completadas*/
+.progress {
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    overflow: visible; /* Permite efectos de brillo si los añades */
+}
+
+.progress-bar {
+    transition: width 0.6s ease; /* Hace que el cambio sea suave */
+    box-shadow: 0 2px 4px rgba(25, 135, 84, 0.3);
+}

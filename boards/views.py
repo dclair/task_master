@@ -64,7 +64,6 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
 
     def get_object(self, queryset=None):
         board = super().get_object(queryset)
-        # Verificación de propiedad: si no es el dueño, fuera.
         if board.owner != self.request.user:
             raise PermissionDenied
         return board
@@ -73,27 +72,49 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         board = self.get_object()
 
-        # 1. Detectamos si hay un filtro de etiqueta activo
+        # --- 1. LÓGICA DE FILTRADO Y DEFINICIÓN DE LISTAS ---
         active_tag_id = self.request.GET.get("tag")
-
-        # 2. Preparamos el filtro de tareas
         tasks_queryset = Task.objects.all()
+
         if active_tag_id:
             tasks_queryset = tasks_queryset.filter(tags__id=active_tag_id)
             context["active_tag"] = get_object_or_404(Tag, id=active_tag_id)
 
-        # 3. Aplicamos el filtro a las listas del tablero
+        # Aquí definimos la variable que te daba el NameError
         lists_with_filtered_tasks = board.lists.prefetch_related(
             Prefetch("tasks", queryset=tasks_queryset.order_by("position"))
         )
 
+        # --- 2. CÁLCULO DE PROGRESO ---
+        all_tasks = Task.objects.filter(task_list__board=board)
+        total_count = all_tasks.count()
+
+        done_tasks = all_tasks.filter(
+            Q(task_list__title__icontains="hecho")
+            | Q(task_list__title__icontains="terminado")
+            | Q(task_list__title__icontains="done")
+            | Q(task_list__title__icontains="completa")
+            | Q(task_list__title__icontains="finalizada")
+        ).count()
+
+        progress = int((done_tasks / total_count) * 100) if total_count > 0 else 0
+
+        # --- 3. PASAR DATOS AL CONTEXTO ---
         context["board_lists"] = lists_with_filtered_tasks
+        context["progress"] = progress
+        context["done_tasks"] = done_tasks
+        context["total_tasks"] = (
+            total_count  # Corregido: antes intentabas usar total_tasks sin definirlo
+        )
+
+        # Etiquetas para el resumen superior y el modal
         context["board_tags"] = (
             Tag.objects.filter(tasks__task_list__board=board)
             .annotate(num_tasks=Count("tasks", filter=Q(tasks__task_list__board=board)))
             .distinct()
         )
         context["tags"] = Tag.objects.all()
+
         return context
 
 
