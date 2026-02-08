@@ -1,12 +1,27 @@
-"""
-Django settings for core project.
-"""
-
 from pathlib import Path
 import os  # Añadimos os para facilitar rutas si fuera necesario
+from django.contrib.messages import constants as messages
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def load_env(path):
+    if not os.path.exists(path):
+        return
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            os.environ.setdefault(key, value)
+
+
+load_env(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -101,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # MODIFICACIÓN: Idioma en español y zona horaria adecuada
 LANGUAGE_CODE = "es-es"
 
-TIME_ZONE = "Europe/Madrid"
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -136,3 +151,24 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Configuración de redirección de autenticación
 LOGIN_REDIRECT_URL = "boards:board_list"
 LOGOUT_REDIRECT_URL = "login"
+
+# Activación de cuenta (segundos)
+ACTIVATION_TOKEN_TIMEOUT = 60 * 60 * 24  # 24 horas
+
+# Correo desde el que se envían los mensajes
+DEFAULT_FROM_EMAIL = os.getenv("EMAIL_USER")
+
+# Correo de la empresa que recibirá los mensajes
+CONTACT_EMAIL = os.getenv("EMAIL_USER")
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+DEFAULT_FROM_EMAIL = os.getenv("EMAIL_USER")
+SERVER_EMAIL = os.getenv("EMAIL_USER")
+# Configuración de Gmail
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# Tus credenciales
+EMAIL_HOST_USER = os.getenv("EMAIL_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASS")  # 'EMAIL_PASS' debe ir con comillas

@@ -5,7 +5,10 @@ app_name = "boards"
 
 urlpatterns = [
     path("", views.BoardListView.as_view(), name="board_list"),
+    path("activate/<uidb64>/<token>/", views.activate_account, name="activate"),
     path("signup/", views.SignUpView.as_view(), name="signup"),
+    path("profile/", views.ProfileView.as_view(), name="profile"),
+    path("profile/edit/", views.ProfileUpdateView.as_view(), name="profile_edit"),
     path("create/", views.BoardCreateView.as_view(), name="board_create"),
     path("<int:pk>/", views.BoardDetailView.as_view(), name="board_detail"),
     path("board/<int:board_id>/add-list/", views.add_list, name="add_list"),

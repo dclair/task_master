@@ -20,6 +20,14 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label small text-muted">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label small text-muted">Contraseña</label>
                         {{ form.password1 }}
                         {% if form.password1.help_text %}
@@ -49,7 +57,10 @@
                     <div class="text-danger small mb-3">{{ form.non_field_errors.0 }}</div>
                     {% endif %}
 
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Registrarme</button>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold" id="signup-submit">
+                        <span class="label">Registrarme</span>
+                        <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                    </button>
                 </form>
 
                 <div class="text-center mt-3 small">
@@ -68,6 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const pass1 = document.getElementById('signup-password1');
   const pass2 = document.getElementById('signup-password2');
   const hint = document.getElementById('password-hint');
+  const form = document.querySelector('form');
+  const submitBtn = document.getElementById('signup-submit');
 
   if (!pass1 || !pass2 || !hint) return;
 
@@ -90,6 +103,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el) el.addEventListener('input', validate);
   });
   validate();
+
+  if (form && submitBtn) {
+    form.addEventListener('submit', () => {
+      submitBtn.disabled = true;
+      const spinner = submitBtn.querySelector('.spinner-border');
+      const label = submitBtn.querySelector('.label');
+      if (spinner) spinner.classList.remove('d-none');
+      if (label) label.textContent = 'Enviando...';
+    });
+  }
 });
 </script>
 {% endblock %}

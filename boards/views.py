@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import (
     ListView,
     CreateView,
@@ -11,19 +11,35 @@ from django.db.models import Count, Q, Prefetch
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.conf import settings
+from django.views.generic import FormView
+from django.contrib.auth.views import LoginView
+from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .forms import BoardForm, SignUpForm
+from .forms import BoardForm, SignUpForm, CustomAuthenticationForm, ProfileForm, UserUpdateForm
+from .tokens import activation_token_generator
 from django.shortcuts import get_object_or_404, redirect
-from .models import Board, TaskList, Task, Tag
+from .models import Board, TaskList, Task, Tag, UserProfile
 from .forms import TaskListForm, TaskForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 import json
 from django.http import JsonResponse
+from django.core.mail import send_mail, EmailMultiAlternatives
+import os
+import logging
+from email.mime.image import MIMEImage
+from django.templatetags.static import static
+
+logger = logging.getLogger(__name__)
 
 
 # Vista para el Registro de Usuarios
@@ -33,12 +49,214 @@ class SignUpView(CreateView):
     template_name = "registration/signup.html"
 
     def form_valid(self, form):
+        user = form.save(commit=False)
+        user.is_active = False
+        user.save()
+        self.object = user
+
+        try:
+            send_activation_email(self.request, user)
+            messages.success(
+                self.request,
+                "Cuenta creada. Revisa tu correo para activar la cuenta.",
+            )
+            return redirect(self.get_success_url())
+        except Exception:
+            logger.exception("Fallo al enviar email de activación")
+            messages.error(
+                self.request,
+                "No se pudo enviar el email de activación. Reintenta el envío.",
+            )
+            resend_url = f"{reverse('resend_activation')}?email={user.email}"
+            return redirect(resend_url)
+
+
+def send_activation_email(request, user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = activation_token_generator.make_token(user)
+    activation_url = request.build_absolute_uri(
+        reverse("boards:activate", args=[uid, token])
+    )
+    context = {
+        "user": user,
+        "activation_url": activation_url,
+    }
+    subject = f"Task Master | Hola {user.username}, activa tu cuenta"
+    html_body = render_to_string("registration/activation_email.html", context)
+    text_body = f"Hola {user.username}, activa tu cuenta: {activation_url}"
+
+    send_html_email(
+        subject=subject,
+        text_body=text_body,
+        html_body=html_body,
+        to_emails=[user.email],
+    )
+
+
+def send_activation_success_email(request, user):
+    login_url = request.build_absolute_uri(reverse("login"))
+    context = {"user": user, "login_url": login_url}
+    subject = f"Task Master | Hola {user.username}, tu cuenta está activa"
+    html_body = render_to_string("registration/activation_success_email.html", context)
+    text_body = f"Cuenta activada. Entra aquí: {login_url}"
+    send_html_email(
+        subject=subject,
+        text_body=text_body,
+        html_body=html_body,
+        to_emails=[user.email],
+    )
+
+
+def send_html_email(subject, text_body, html_body, to_emails):
+    email = EmailMultiAlternatives(
+        subject,
+        text_body,
+        settings.DEFAULT_FROM_EMAIL,
+        to_emails,
+    )
+    email.attach_alternative(html_body, "text/html")
+
+    logo_path = os.path.join(settings.BASE_DIR, "static", "img", "taskmaster.png")
+    try:
+        with open(logo_path, "rb") as f:
+            img = MIMEImage(f.read())
+            img.add_header("Content-ID", "<taskmaster-logo>")
+            img.add_header("Content-Disposition", "inline", filename="taskmaster.png")
+            email.attach(img)
+    except FileNotFoundError:
+        pass
+
+    email.send(fail_silently=False)
+
+
+class CustomLoginView(LoginView):
+    authentication_form = CustomAuthenticationForm
+    template_name = "registration/login.html"
+
+    def form_valid(self, form):
+        user = form.get_user()
+        is_first_login = user.last_login is None
         response = super().form_valid(form)
-        messages.success(
-            self.request,
-            "Cuenta creada. Ya puedes iniciar sesión.",
-        )
+        if is_first_login:
+            messages.success(
+                self.request,
+                f"Bienvenido/a, {user.username}. Tu cuenta está lista para empezar: crea tus tableros, organiza tareas y comparte con tu equipo. Equipo Task Master.",
+            )
         return response
+
+
+class ResendActivationForm(forms.Form):
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={"class": "form-control rounded-pill"})
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={"class": "form-control rounded-pill"})
+    )
+
+
+class ResendActivationView(FormView):
+    template_name = "registration/resend_activation.html"
+    form_class = ResendActivationForm
+    success_url = reverse_lazy("login")
+
+    def get_initial(self):
+        initial = super().get_initial()
+        email = self.request.GET.get("email")
+        if email:
+            initial["email"] = email
+        return initial
+
+    def form_valid(self, form):
+        email = form.cleaned_data["email"].strip().lower()
+        username = form.cleaned_data["username"].strip()
+        user = User.objects.filter(
+            email__iexact=email, username__iexact=username
+        ).first()
+
+        if not user:
+            messages.error(self.request, "No existe una cuenta con esos datos.")
+            return redirect(self.get_success_url())
+
+        if user.is_active:
+            messages.info(self.request, "La cuenta ya está activada. Inicia sesión.")
+            return redirect(self.get_success_url())
+
+        try:
+            send_activation_email(self.request, user)
+            messages.success(self.request, "Te hemos enviado un nuevo enlace de activación.")
+        except Exception:
+            logger.exception("Fallo al reenviar email de activación")
+            messages.error(self.request, "No se pudo enviar el email. Inténtalo más tarde.")
+
+        return redirect(self.get_success_url())
+
+
+def activate_account(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (User.DoesNotExist, ValueError, TypeError, OverflowError):
+        user = None
+
+    if user:
+        state = activation_token_generator.get_token_state(user, token)
+        if state == "valid":
+            if not user.is_active:
+                user.is_active = True
+                user.save()
+                try:
+                    send_activation_success_email(request, user)
+                except Exception:
+                    pass
+            messages.success(request, "Cuenta activada. Ya puedes iniciar sesión.")
+            return redirect("login")
+        if state == "expired":
+            messages.error(
+                request,
+                "El enlace de activación ha caducado. Solicita uno nuevo.",
+            )
+            return redirect(f"{reverse('resend_activation')}?email={user.email}")
+
+    messages.error(request, "Enlace de activación inválido.")
+    return redirect("login")
+
+
+class ProfileView(LoginRequiredMixin, DetailView):
+    model = UserProfile
+    template_name = "profiles/profile_detail.html"
+    context_object_name = "profile"
+
+    def get_object(self, queryset=None):
+        profile, _ = UserProfile.objects.get_or_create(user=self.request.user)
+        return profile
+
+
+class ProfileUpdateView(LoginRequiredMixin, FormView):
+    template_name = "profiles/profile_edit.html"
+    form_class = ProfileForm
+    success_url = reverse_lazy("boards:profile")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile, _ = UserProfile.objects.get_or_create(user=self.request.user)
+        context["profile_form"] = kwargs.get("profile_form") or ProfileForm(instance=profile)
+        context["user_form"] = kwargs.get("user_form") or UserUpdateForm(instance=self.request.user)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, "Perfil actualizado correctamente.")
+            return redirect(self.success_url)
+
+        return self.render_to_response(
+            self.get_context_data(user_form=user_form, profile_form=profile_form)
+        )
 
 
 # Vista para listar los Tableros del usuario

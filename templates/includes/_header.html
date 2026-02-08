@@ -1,7 +1,9 @@
+{% load static %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 shadow-sm">
     <div class="container">
-        <a class="navbar-brand fw-800 fs-4" href="{% url 'boards:board_list' %}">
-            <i class="bi bi-check2-square text-primary me-2"></i>TASK<span class="text-primary">MASTER</span>
+        <a class="navbar-brand fw-800 fs-4 d-flex align-items-center gap-2" href="{% url 'boards:board_list' %}">
+            <img src="{% static 'img/taskmaster.png' %}" alt="Task Master" height="100" class="rounded-2">
+            <span>TASK<span class="text-primary">MASTER</span></span>
         </a>
         
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -14,6 +16,11 @@
                 <li class="nav-item">
                     <a class="nav-link px-3" href="{% url 'boards:board_list' %}">
                         <i class="bi bi-grid-1x2 me-1"></i> Mis Tableros
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3" href="{% url 'boards:profile' %}">
+                        <i class="bi bi-person me-1"></i> Perfil
                     </a>
                 </li>
                 {% endif %}

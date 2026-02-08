@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block head_title %}Perfil | Task Master{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm" style="border-radius: 18px;">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <img src="{{ profile.avatar_url }}" alt="Avatar" width="72" height="72" class="rounded-circle object-fit-cover">
+                    <div>
+                        <h4 class="mb-1">
+                            {% if profile.user.first_name or profile.user.last_name %}
+                                {{ profile.user.first_name }} {{ profile.user.last_name }}
+                            {% else %}
+                                {{ profile.user.username }}
+                            {% endif %}
+                        </h4>
+                        <div class="text-muted small">@{{ profile.user.username }}</div>
+                        <div class="text-muted small">{{ profile.user.email }}</div>
+                    </div>
+                </div>
+
+                {% if profile.bio %}
+                <p class="text-muted mb-4">{{ profile.bio }}</p>
+                {% endif %}
+
+                <a href="{% url 'boards:profile_edit' %}" class="btn btn-primary rounded-pill px-4">Editar perfil</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

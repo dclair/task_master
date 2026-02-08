@@ -83,3 +83,17 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    bio = models.TextField(blank=True)
+    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+
+    def avatar_url(self):
+        if self.avatar:
+            return self.avatar.url
+        return "/static/img/taskmaster.png"
+
+    def __str__(self):
+        return self.user.username

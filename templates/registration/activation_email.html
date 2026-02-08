@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Activa tu cuenta</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f5f7fb;font-family:Arial,Helvetica,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f5f7fb;padding:24px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,0.08);">
+            <tr>
+              <td style="background:#0b0b0b;padding:20px 24px;text-align:left;">
+                <img src="cid:taskmaster-logo" alt="Task Master" height="36" style="display:block;" />
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 24px 8px 24px;">
+                <h2 style="margin:0 0 8px 0;color:#0f172a;font-size:22px;">Activa tu cuenta</h2>
+                <p style="margin:0;color:#475569;font-size:14px;line-height:1.6;">
+                  Hola {{ user.username }}, gracias por registrarte en Task Master.
+                  Para activar tu cuenta, pulsa el botón:
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 24px;">
+                <a href="{{ activation_url }}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 18px;border-radius:999px;font-size:14px;">
+                  Activar cuenta
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 24px 24px 24px;">
+                <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6;">
+                  Si no solicitaste esta cuenta, puedes ignorar este correo.
+                </p>
+                <p style="margin:12px 0 0 0;color:#cbd5e1;font-size:11px;">
+                  {{ activation_url }}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
