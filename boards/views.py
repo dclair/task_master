@@ -7,7 +7,7 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Prefetch
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -73,16 +73,27 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         board = self.get_object()
 
-        # Obtenemos las etiquetas que se están usando en ESTE tablero y contamos sus tareas
-        # Usamos el filtro interno para que solo cuente las tareas de este tablero específico
-        board_tags = (
+        # 1. Detectamos si hay un filtro de etiqueta activo
+        active_tag_id = self.request.GET.get("tag")
+
+        # 2. Preparamos el filtro de tareas
+        tasks_queryset = Task.objects.all()
+        if active_tag_id:
+            tasks_queryset = tasks_queryset.filter(tags__id=active_tag_id)
+            context["active_tag"] = get_object_or_404(Tag, id=active_tag_id)
+
+        # 3. Aplicamos el filtro a las listas del tablero
+        lists_with_filtered_tasks = board.lists.prefetch_related(
+            Prefetch("tasks", queryset=tasks_queryset.order_by("position"))
+        )
+
+        context["board_lists"] = lists_with_filtered_tasks
+        context["board_tags"] = (
             Tag.objects.filter(tasks__task_list__board=board)
             .annotate(num_tasks=Count("tasks", filter=Q(tasks__task_list__board=board)))
             .distinct()
         )
-
-        context["board_tags"] = board_tags
-        context["tags"] = Tag.objects.all()  # Para el modal de añadir/editar
+        context["tags"] = Tag.objects.all()
         return context
 
 
