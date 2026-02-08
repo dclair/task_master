@@ -27,12 +27,14 @@ from django.urls import reverse_lazy
 from .forms import BoardForm, SignUpForm, CustomAuthenticationForm, ProfileForm, UserUpdateForm, CustomPasswordResetForm
 from .tokens import activation_token_generator
 from django.shortcuts import get_object_or_404, redirect
-from .models import Board, TaskList, Task, Tag, UserProfile, BoardMembership, BoardInvite
+from .models import Board, TaskList, Task, Tag, UserProfile, BoardMembership, BoardInvite, Activity
 from .forms import TaskListForm, TaskForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 import json
 from django.http import JsonResponse
+from django.http import HttpResponse
+import csv
 from django.core.mail import send_mail, EmailMultiAlternatives
 import os
 import logging
@@ -334,6 +336,7 @@ class BoardCreateView(LoginRequiredMixin, CreateView):
         BoardMembership.objects.get_or_create(
             board=board, user=self.request.user, defaults={"role": "owner"}
         )
+        _log_activity(board, self.request.user, "Tablero creado", board.title)
         return redirect(self.success_url)
 
     def form_valid(self, form):
@@ -401,6 +404,15 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
         context["user_role"] = membership.role if membership else None
         context["memberships"] = board.memberships.select_related("user").all()
         context["invites"] = board.invites.filter(accepted_at__isnull=True)
+        activity_filter = self.request.GET.get("activity")
+        activities_qs = board.activities.select_related("user")
+        if activity_filter:
+            activities_qs = activities_qs.filter(action=activity_filter)
+        context["activities"] = activities_qs[:20]
+        context["activity_filter"] = activity_filter
+        context["activity_actions"] = (
+            board.activities.values_list("action", flat=True).distinct()
+        )
 
         # Etiquetas para el resumen superior y el modal
         context["board_tags"] = (
@@ -429,6 +441,7 @@ def add_list(request, board_id):
             # Calculamos la posición (la última)
             new_list.position = board.lists.count()
             new_list.save()
+            _log_activity(board, request.user, "Lista creada", new_list.title)
     return redirect("boards:board_detail", pk=board_id)
 
 
@@ -458,6 +471,7 @@ def add_task(request, list_id):
             # --- PARTE NUEVA PARA ETIQUETAS ---
             selected_tags = request.POST.getlist("tags")  # Captura los checkboxes
             task.tags.set(selected_tags)  # Guarda las etiquetas en la tarea
+            _log_activity(task_list.board, request.user, "Tarea creada", task.title)
     return redirect("boards:board_detail", pk=task_list.board.id)
 
 
@@ -472,6 +486,7 @@ def delete_list(request, list_id):
     ).first()
     if not membership or membership.role not in ["owner", "editor"]:
         raise PermissionDenied
+    _log_activity(task_list.board, request.user, "Lista eliminada", task_list.title)
     board_id = task_list.board.id
     task_list.delete()
     return redirect("boards:board_detail", pk=board_id)
@@ -488,6 +503,7 @@ def delete_task(request, task_id):
     ).first()
     if not membership or membership.role not in ["owner", "editor"]:
         raise PermissionDenied
+    _log_activity(task.task_list.board, request.user, "Tarea eliminada", task.title)
     board_id = task.task_list.board.id
     task.delete()
     return redirect("boards:board_detail", pk=board_id)
@@ -512,8 +528,15 @@ def move_task(request):
         if new_list.board_id != task.task_list.board_id:
             raise PermissionDenied
 
+        from_list = task.task_list.title
         task.task_list = new_list
         task.save()
+        _log_activity(
+            new_list.board,
+            request.user,
+            "Tarea movida",
+            f"{task.title} ({from_list} → {new_list.title})",
+        )
 
         return JsonResponse({"status": "ok"})
     return JsonResponse({"status": "error"}, status=400)
@@ -552,12 +575,22 @@ def edit_task(request, task_id):
     # --- PARTE NUEVA PARA ETIQUETAS ---
     selected_tags = request.POST.getlist("tags")
     task.tags.set(selected_tags)  # Actualiza la lista de etiquetas
+    _log_activity(task.task_list.board, request.user, "Tarea actualizada", task.title)
     return redirect("boards:board_detail", pk=task.task_list.board.id)
 
 
 def _require_owner(board, user):
     membership = BoardMembership.objects.filter(board=board, user=user).first()
     if not membership or membership.role != "owner":
+        raise PermissionDenied
+
+
+def _log_activity(board, user, action, details=""):
+    Activity.objects.create(board=board, user=user, action=action, details=details)
+
+
+def _require_member(board, user):
+    if not BoardMembership.objects.filter(board=board, user=user).exists():
         raise PermissionDenied
 
 
@@ -583,6 +616,7 @@ def add_member(request, board_id):
         board=board, user=user, defaults={"role": role}
     )
     messages.success(request, "Miembro actualizado.")
+    _log_activity(board, request.user, "Miembro añadido/actualizado", f"{user.username} ({role})")
     return redirect("boards:board_detail", pk=board_id)
 
 
@@ -597,6 +631,7 @@ def update_member_role(request, board_id, membership_id):
         membership.role = role
         membership.save()
     messages.success(request, "Rol actualizado.")
+    _log_activity(board, request.user, "Rol actualizado", f"{membership.user.username} → {membership.role}")
     return redirect("boards:board_detail", pk=board_id)
 
 
@@ -609,9 +644,138 @@ def remove_member(request, board_id, membership_id):
     if membership.user_id == board.owner_id:
         messages.error(request, "No puedes eliminar al propietario del tablero.")
         return redirect("boards:board_detail", pk=board_id)
+    _log_activity(board, request.user, "Miembro eliminado", membership.user.username)
     membership.delete()
     messages.success(request, "Miembro eliminado.")
     return redirect("boards:board_detail", pk=board_id)
+
+
+@login_required
+def export_tasks_csv(request, board_id):
+    board = get_object_or_404(Board, id=board_id)
+    membership = BoardMembership.objects.filter(board=board, user=request.user).first()
+    if not membership or membership.role not in ["owner", "editor"]:
+        raise PermissionDenied
+
+    tasks = (
+        Task.objects.filter(task_list__board=board)
+        .select_related("task_list", "created_by")
+        .prefetch_related("assigned_to", "tags")
+        .order_by("task_list__position", "position")
+    )
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="board_{board.id}_tasks.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        "id",
+        "title",
+        "description",
+        "priority",
+        "due_date",
+        "list",
+        "list_id",
+        "created_by",
+        "created_by_id",
+        "assigned_to",
+        "assigned_to_ids",
+        "tags",
+        "tags_ids",
+        "created_at",
+        "position",
+    ])
+    for t in tasks:
+        assigned = ", ".join([u.username for u in t.assigned_to.all()])
+        assigned_ids = ", ".join([str(u.id) for u in t.assigned_to.all()])
+        tags = ", ".join([tag.name for tag in t.tags.all()])
+        tag_ids = ", ".join([str(tag.id) for tag in t.tags.all()])
+        writer.writerow([
+            t.id,
+            t.title,
+            t.description,
+            t.priority,
+            t.due_date.isoformat() if t.due_date else "",
+            t.task_list.title,
+            t.task_list.id,
+            t.created_by.username if t.created_by else "",
+            t.created_by.id if t.created_by else "",
+            assigned,
+            assigned_ids,
+            tags,
+            tag_ids,
+            t.created_at.isoformat() if t.created_at else "",
+            t.position,
+        ])
+
+    return response
+
+
+@login_required
+def export_tasks_json(request, board_id):
+    board = get_object_or_404(Board, id=board_id)
+    membership = BoardMembership.objects.filter(board=board, user=request.user).first()
+    if not membership or membership.role not in ["owner", "editor"]:
+        raise PermissionDenied
+
+    tasks = (
+        Task.objects.filter(task_list__board=board)
+        .select_related("task_list", "created_by")
+        .prefetch_related("assigned_to", "tags")
+        .order_by("task_list__position", "position")
+    )
+
+    data = []
+    for t in tasks:
+        data.append({
+            "id": t.id,
+            "title": t.title,
+            "description": t.description,
+            "priority": t.priority,
+            "due_date": t.due_date.isoformat() if t.due_date else None,
+            "list": {"id": t.task_list.id, "title": t.task_list.title},
+            "created_by": {
+                "id": t.created_by.id,
+                "username": t.created_by.username,
+            } if t.created_by else None,
+            "assigned_to": [
+                {"id": u.id, "username": u.username} for u in t.assigned_to.all()
+            ],
+            "tags": [{"id": tag.id, "name": tag.name} for tag in t.tags.all()],
+            "created_at": t.created_at.isoformat() if t.created_at else None,
+            "position": t.position,
+        })
+
+    return JsonResponse({"board": board.title, "tasks": data})
+
+
+@login_required
+def export_activity_csv(request, board_id):
+    board = get_object_or_404(Board, id=board_id)
+    membership = BoardMembership.objects.filter(board=board, user=request.user).first()
+    if not membership or membership.role not in ["owner", "editor"]:
+        raise PermissionDenied
+
+    activity_filter = request.GET.get("activity")
+    activities = board.activities.select_related("user")
+    if activity_filter:
+        activities = activities.filter(action=activity_filter)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="board_{board.id}_activity.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["id", "action", "details", "user", "created_at"])
+    for a in activities:
+        writer.writerow([
+            a.id,
+            a.action,
+            a.details,
+            a.user.username if a.user else "",
+            a.created_at.isoformat() if a.created_at else "",
+        ])
+
+    return response
 
 
 @login_required
@@ -619,23 +783,31 @@ def remove_member(request, board_id, membership_id):
 def invite_member(request, board_id):
     board = get_object_or_404(Board, id=board_id)
     _require_owner(board, request.user)
+    username = request.POST.get("username", "").strip()
     email = request.POST.get("email", "").strip().lower()
     role = request.POST.get("role", "viewer")
     if role not in ["owner", "editor", "viewer"]:
         role = "viewer"
-    if not email:
+    if not email or not username:
         messages.error(request, "Email inválido.")
+        return redirect("boards:board_detail", pk=board_id)
+
+    user = User.objects.filter(username__iexact=username, email__iexact=email).first()
+    if not user:
+        messages.error(request, "No existe un usuario con ese nombre y email.")
         return redirect("boards:board_detail", pk=board_id)
 
     invite, _ = BoardInvite.objects.update_or_create(
         board=board,
         email=email,
+        username=username,
         defaults={"role": role, "invited_by": request.user, "accepted_at": None},
     )
 
     try:
         send_invite_email(request, invite)
         messages.success(request, "Invitación enviada.")
+        _log_activity(board, request.user, "Invitación enviada", f"{invite.username} · {invite.email}")
     except Exception:
         logger.exception("Fallo al enviar invitación")
         messages.error(request, "No se pudo enviar la invitación.")
@@ -665,12 +837,16 @@ def accept_invite(request, token):
     if request.user.email.lower() != invite.email.lower():
         messages.error(request, "Esta invitación no corresponde a tu email.")
         return redirect("boards:board_list")
+    if invite.username and request.user.username.lower() != invite.username.lower():
+        messages.error(request, "Esta invitación no corresponde a tu usuario y email.")
+        return redirect("boards:board_list")
 
     BoardMembership.objects.update_or_create(
         board=invite.board, user=request.user, defaults={"role": invite.role}
     )
     invite.accepted_at = timezone.now()
     invite.save()
+    _log_activity(invite.board, request.user, "Invitación aceptada", request.user.username)
     messages.success(request, "Invitación aceptada. Ya tienes acceso al tablero.")
     return redirect("boards:board_detail", pk=invite.board.id)
 
@@ -683,4 +859,5 @@ def revoke_invite(request, board_id, invite_id):
     invite = get_object_or_404(BoardInvite, id=invite_id, board=board)
     invite.delete()
     messages.success(request, "Invitación revocada.")
+    _log_activity(board, request.user, "Invitación revocada", invite.email)
     return redirect("boards:board_detail", pk=board_id)

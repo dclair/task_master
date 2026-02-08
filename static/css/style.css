@@ -80,3 +80,44 @@ body { font-family: 'Inter', sans-serif; background-color: #f1f2f4; margin: 0; }
 .password-hint li.bad { color: #ef4444; }
 .password-hint li.bad::before { content: '✕'; color: #ef4444; }
 .btn-xs { font-size: 0.65rem; padding: 0.2rem 0.5rem; }
+.section-box {
+    background: #ffffff;
+    border: 1px solid #eef2f7;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 6px 14px rgba(15,23,42,0.04);
+}
+.section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.section-title::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #2563eb;
+    opacity: 0.7;
+}
+.invite-form {
+    background: #f8fafc;
+    border-color: #e2e8f0 !important;
+}
+.invite-form .form-control:focus,
+.invite-form .form-select:focus {
+    box-shadow: none;
+}
+@media (max-width: 768px) {
+    .invite-form {
+        flex-wrap: wrap !important;
+        border-radius: 14px;
+        border: 0 !important;
+        background: transparent;
+    }
+    .invite-form .form-control,
+    .invite-form .form-select,
+    .invite-form button {
+        width: 100%;
+    }
+}

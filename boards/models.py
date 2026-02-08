@@ -37,6 +37,7 @@ class BoardInvite(models.Model):
     ROLE_CHOICES = BoardMembership.ROLE_CHOICES
 
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="invites")
+    username = models.CharField(max_length=150, blank=True, null=True)
     email = models.EmailField()
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="viewer")
     invited_by = models.ForeignKey(
@@ -46,7 +47,7 @@ class BoardInvite(models.Model):
     accepted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        unique_together = ("board", "email")
+        unique_together = ("board", "username", "email")
 
     def __str__(self):
         return f"{self.email} - {self.board.title} ({self.role})"
@@ -131,3 +132,17 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class Activity(models.Model):
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="activities")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    action = models.CharField(max_length=120)
+    details = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.action} ({self.board.title})"

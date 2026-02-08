@@ -35,4 +35,7 @@ urlpatterns = [
         views.revoke_invite,
         name="revoke_invite",
     ),
+    path("<int:board_id>/export/csv/", views.export_tasks_csv, name="export_tasks_csv"),
+    path("<int:board_id>/export/json/", views.export_tasks_json, name="export_tasks_json"),
+    path("<int:board_id>/export/activity/", views.export_activity_csv, name="export_activity_csv"),
 ]
