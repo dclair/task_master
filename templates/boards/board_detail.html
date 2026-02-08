@@ -90,7 +90,7 @@
             {% for task in list.tasks.all %}
             <div class="task-card prio-{{ task.priority }}" 
                 data-taskid="{{ task.id }}" data-title="{{ task.title }}" data-desc="{{ task.description|default:'' }}"
-                data-prio="{{ task.priority }}" data-date="{{ task.due_date|date:'Y-m-d\TH:i' }}"
+                data-prio="{{ task.priority }}" data-date="{{ task.due_date|date:'Y-m-d\TH:i' }}" data-assigned="{{ task.assigned_to_id|default:'' }}"
                 data-tags="{% for tag in task.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}">
                 
                 <div class="task-card-header">
@@ -122,6 +122,11 @@
                         {% for tag in task.tags.all %}
                         <span class="badge rounded-pill border text-dark" style="background-color: {{ tag.color }}; font-size: 0.6rem;">{{ tag.name|upper }}</span>
                         {% endfor %}
+                    </div>
+
+                    <div class="task-meta d-flex flex-wrap gap-3 text-muted mb-2">
+                        <span>Creada por: {{ task.created_by.username|default:"Desconocido" }}</span>
+                        <span>Asignada a: {{ task.assigned_to.username|default:"Sin asignar" }}</span>
                     </div>
 
                     {% if task.description %}

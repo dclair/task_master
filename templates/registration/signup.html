@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card border-0 shadow-sm" style="border-radius: 18px;">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-2">Crear cuenta</h3>
+                <p class="text-muted small mb-4">Regístrate para empezar a organizar tus tareas.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Usuario</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Contraseña</label>
+                        {{ form.password1 }}
+                        {% if form.password1.help_text %}
+                        <div class="password-help small text-muted mt-1">
+                            {{ form.password1.help_text|safe }}
+                        </div>
+                        {% endif %}
+                        <ul class="password-hint small text-muted mt-2" id="password-hint">
+                            <li data-rule="len">Mínimo 8 caracteres</li>
+                            <li data-rule="numeric">No puede ser solo números</li>
+                            <li data-rule="match">Debe coincidir con la confirmación</li>
+                        </ul>
+                        {% if form.password1.errors %}
+                        <div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Repite la contraseña</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                        <div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div class="text-danger small mb-3">{{ form.non_field_errors.0 }}</div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Registrarme</button>
+                </form>
+
+                <div class="text-center mt-3 small">
+                    ¿Ya tienes cuenta? <a href="{% url 'login' %}" class="text-decoration-none fw-bold">Entrar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const username = document.getElementById('signup-username');
+  const pass1 = document.getElementById('signup-password1');
+  const pass2 = document.getElementById('signup-password2');
+  const hint = document.getElementById('password-hint');
+
+  if (!pass1 || !pass2 || !hint) return;
+
+  const setRule = (rule, ok) => {
+    const li = hint.querySelector(`[data-rule="${rule}"]`);
+    if (!li) return;
+    li.classList.toggle('ok', ok);
+    li.classList.toggle('bad', !ok);
+  };
+
+  const validate = () => {
+    const p1 = pass1.value || '';
+    const p2 = pass2.value || '';
+    setRule('len', p1.length >= 8);
+    setRule('numeric', p1.length > 0 && !/^\d+$/.test(p1));
+    setRule('match', p1.length > 0 && p1 === p2);
+  };
+
+  [pass1, pass2, username].forEach(el => {
+    if (el) el.addEventListener('input', validate);
+  });
+  validate();
+});
+</script>
+{% endblock %}

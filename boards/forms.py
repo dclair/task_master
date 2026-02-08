@@ -1,4 +1,6 @@
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from .models import Board, TaskList, Task
 
 
@@ -21,6 +23,21 @@ class BoardForm(forms.ModelForm):
                     "rows": 3,
                 }
             ),
+        }
+
+
+class SignUpForm(UserCreationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.widget.attrs.update({"class": "form-control rounded-pill"})
+            field.widget.attrs.setdefault("id", f"signup-{name}")
+
+    class Meta:
+        model = User
+        fields = ("username", "password1", "password2")
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "form-control rounded-pill"}),
         }
 
 

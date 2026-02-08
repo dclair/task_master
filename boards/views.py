@@ -9,12 +9,14 @@ from django.views.generic import (
 )
 from django.db.models import Count, Q, Prefetch
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .forms import BoardForm
+from .forms import BoardForm, SignUpForm
 from django.shortcuts import get_object_or_404, redirect
 from .models import Board, TaskList, Task, Tag
 from .forms import TaskListForm, TaskForm
@@ -26,9 +28,17 @@ from django.http import JsonResponse
 
 # Vista para el Registro de Usuarios
 class SignUpView(CreateView):
-    form_class = UserCreationForm
+    form_class = SignUpForm
     success_url = reverse_lazy("login")
     template_name = "registration/signup.html"
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            "Cuenta creada. Ya puedes iniciar sesión.",
+        )
+        return response
 
 
 # Vista para listar los Tableros del usuario
@@ -114,6 +124,7 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
             .distinct()
         )
         context["tags"] = Tag.objects.all()
+        context["users"] = User.objects.all()
 
         return context
 
@@ -141,6 +152,7 @@ def add_task(request, list_id):
             task = form.save(commit=False)
             task.task_list = task_list
             task.position = task_list.tasks.count()
+            task.created_by = request.user
             task.save()
 
             # --- PARTE NUEVA PARA ETIQUETAS ---
@@ -202,6 +214,8 @@ def edit_task(request, task_id):
     task.title = request.POST.get("title")
     task.description = request.POST.get("description")
     task.priority = request.POST.get("priority")
+    assigned_to_id = request.POST.get("assigned_to") or None
+    task.assigned_to_id = assigned_to_id
 
     # Manejo de la fecha (puede venir vacía)
     due_date = request.POST.get("due_date")

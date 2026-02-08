@@ -61,6 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.querySelector('[name="description"]').value = card.getAttribute('data-desc');
                 form.querySelector('[name="priority"]').value = card.getAttribute('data-prio');
                 form.querySelector('[name="due_date"]').value = card.getAttribute('data-date');
+                const assigned = card.getAttribute('data-assigned') || '';
+                const assignedSelect = form.querySelector('[name="assigned_to"]');
+                if (assignedSelect) assignedSelect.value = assigned;
                 const tagIds = (card.getAttribute('data-tags') || '').split(',');
                 tagIds.forEach(id => {
                     const cb = form.querySelector(`[name="tags"][value="${id}"]`);

@@ -30,6 +30,16 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label extra-small fw-bold text-muted text-uppercase mb-1">Asignada a</label>
+                        <select name="assigned_to" class="form-select shadow-none" style="border-radius: 10px;">
+                            <option value="">Sin asignar</option>
+                            {% for u in users %}
+                            <option value="{{ u.id }}">{{ u.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label extra-small fw-bold text-muted text-uppercase mb-1">Descripción</label>
                         <textarea name="description" class="form-control shadow-none" rows="3" placeholder="Opcional..." style="border-radius: 10px; resize: none;"></textarea>
                     </div>
