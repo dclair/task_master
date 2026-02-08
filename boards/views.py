@@ -137,3 +137,22 @@ def move_task(request):
 
         return JsonResponse({"status": "ok"})
     return JsonResponse({"status": "error"}, status=400)
+
+
+# Vista para editar una Tarea
+@login_required
+@require_POST
+def edit_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id, task_list__board__owner=request.user)
+
+    # Actualizamos los campos con lo que viene del formulario
+    task.title = request.POST.get("title")
+    task.description = request.POST.get("description")
+    task.priority = request.POST.get("priority")
+
+    # Manejo de la fecha (puede venir vacía)
+    due_date = request.POST.get("due_date")
+    task.due_date = due_date if due_date else None
+
+    task.save()
+    return redirect("boards:board_detail", pk=task.task_list.board.id)

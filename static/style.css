@@ -166,3 +166,10 @@ body {
     box-shadow: 0 15px 30px rgba(0,0,0,0.2) !important;
     opacity: 0.9;
 }
+
+
+/* Evita que el clic en el botón de borrar active el modal de la tarjeta padre */
+.btn-delete-task {
+    position: relative;
+    z-index: 10;
+}

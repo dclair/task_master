@@ -1,20 +1,55 @@
 document.addEventListener('DOMContentLoaded', function() {
     
-    // --- 1. LÓGICA DE LOS MODALES (Lo que ya tenías) ---
+    // --- 1. LÓGICA DE LOS MODALES (creación y edición) ---
     const taskModal = document.getElementById('taskModal');
-    if (taskModal) {
-        taskModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const listId = button.getAttribute('data-listid');
-            const form = taskModal.querySelector('#taskForm');
-            // Ajustamos la ruta para que apunte a la lista correcta
-            form.action = `/boards/list/${listId}/add_task/`;
-        });
-    }
+    
 
     // --- 2. LÓGICA DE DRAG & DROP (Lo nuevo) ---
     const containers = document.querySelectorAll('.tasks-container');
+    if (taskModal) {
+        taskModal.addEventListener('show.bs.modal', function (event) {
+            const trigger = event.relatedTarget; // El elemento que abrió el modal
+            const form = document.getElementById('taskForm');
+            const modalTitle = taskModal.querySelector('.modal-title') || taskModal.querySelector('h5');
+            const submitBtn = form.querySelector('button[type="submit"]');
 
+            if (trigger.classList.contains('task-card')) {
+                // --- MODO EDICIÓN ---
+                modalTitle.textContent = 'Editar Tarea';
+                submitBtn.textContent = 'Guardar Cambios';
+                submitBtn.className = 'btn btn-primary rounded-pill w-100 fw-bold';
+
+                // Rellenar campos con seguridad (si existen)
+                const fields = ['title', 'description', 'priority', 'due_date'];
+                const dataMap = {
+                    'title': 'data-title',
+                    'description': 'data-desc',
+                    'priority': 'data-prio',
+                    'due_date': 'data-date'
+                };
+
+                fields.forEach(field => {
+                    const input = form.querySelector(`[name="${field}"]`);
+                    if (input) {
+                        input.value = trigger.getAttribute(dataMap[field]) || '';
+                    }
+                });
+
+                const taskId = trigger.getAttribute('data-taskid');
+                form.action = `/boards/task/${taskId}/edit/`;
+
+            } else {
+                // --- MODO CREACIÓN ---
+                modalTitle.textContent = 'Nueva Tarea';
+                submitBtn.textContent = 'Crear Tarea';
+                submitBtn.className = 'btn btn-success rounded-pill w-100 fw-bold';
+                
+                form.reset();
+                const listId = trigger.getAttribute('data-listid');
+                form.action = `/boards/list/${listId}/add_task/`;
+            }
+        });
+    }
     containers.forEach(container => {
         new Sortable(container, {
             group: 'kanban', // Permite mover entre diferentes columnas
