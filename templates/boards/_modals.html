@@ -36,11 +36,16 @@
 
                     <div class="mb-3">
                         <label class="form-label extra-small fw-bold text-muted text-uppercase mb-1">Asignada a</label>
-                        <select name="assigned_to" multiple class="form-select shadow-none" style="border-radius: 10px;">
+                        <div class="d-flex flex-wrap gap-2 pt-1">
                             {% for u in users %}
-                            <option value="{{ u.id }}">{{ u.username }}</option>
+                            <div class="tag-item">
+                                <input type="checkbox" name="assigned_to" value="{{ u.id }}" id="modal_user_{{ u.id }}" class="btn-check">
+                                <label class="btn btn-sm rounded-pill px-3 fw-bold shadow-sm" for="modal_user_{{ u.id }}">
+                                    {{ u.username }}
+                                </label>
+                            </div>
                             {% endfor %}
-                        </select>
+                        </div>
                         <div class="extra-small text-muted mt-1">Puedes seleccionar varios usuarios.</div>
                     </div>
 

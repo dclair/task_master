@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('taskForm');
             form.reset();
             form.querySelectorAll('[name="tags"]').forEach(cb => cb.checked = false);
+            form.querySelectorAll('[name="assigned_to"]').forEach(cb => cb.checked = false);
 
             if (trigger.classList.contains('btn-edit-task')) {
                 const card = trigger.closest('.task-card');
@@ -85,12 +86,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const createdByInput = form.querySelector('[name="created_by_readonly"]');
                 if (createdByInput) createdByInput.value = createdBy;
                 const assigned = (card.getAttribute('data-assigned') || '').split(',').filter(Boolean);
-                const assignedSelect = form.querySelector('[name="assigned_to"]');
-                if (assignedSelect) {
-                    Array.from(assignedSelect.options).forEach(opt => {
-                        opt.selected = assigned.includes(opt.value);
-                    });
-                }
+                form.querySelectorAll('[name="assigned_to"]').forEach(cb => {
+                    cb.checked = assigned.includes(cb.value);
+                });
                 const tagIds = (card.getAttribute('data-tags') || '').split(',');
                 tagIds.forEach(id => {
                     const cb = form.querySelector(`[name="tags"][value="${id}"]`);
