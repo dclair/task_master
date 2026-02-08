@@ -94,12 +94,8 @@ class Task(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    assigned_to = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="assigned_tasks",
+    assigned_to = models.ManyToManyField(
+        User, blank=True, related_name="assigned_tasks"
     )
     created_by = models.ForeignKey(
         User,

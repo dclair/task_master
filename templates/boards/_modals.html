@@ -14,6 +14,11 @@
                         <input type="text" name="title" class="form-control shadow-none" placeholder="¿Qué hay que hacer?" required style="border-radius: 10px;">
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label extra-small fw-bold text-muted text-uppercase mb-1">Creada por</label>
+                        <input type="text" name="created_by_readonly" class="form-control shadow-none" readonly style="border-radius: 10px; background-color: #f8fafc;">
+                    </div>
+
                     <div class="row g-3 mb-3">
                         <div class="col-6">
                             <label class="form-label extra-small fw-bold text-muted text-uppercase mb-1">Prioridad</label>
@@ -31,12 +36,12 @@
 
                     <div class="mb-3">
                         <label class="form-label extra-small fw-bold text-muted text-uppercase mb-1">Asignada a</label>
-                        <select name="assigned_to" class="form-select shadow-none" style="border-radius: 10px;">
-                            <option value="">Sin asignar</option>
+                        <select name="assigned_to" multiple class="form-select shadow-none" style="border-radius: 10px;">
                             {% for u in users %}
                             <option value="{{ u.id }}">{{ u.username }}</option>
                             {% endfor %}
                         </select>
+                        <div class="extra-small text-muted mt-1">Puedes seleccionar varios usuarios.</div>
                     </div>
 
                     <div class="mb-3">

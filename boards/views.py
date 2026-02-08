@@ -389,7 +389,8 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
             .distinct()
         )
         context["tags"] = Tag.objects.all()
-        context["users"] = User.objects.all()
+        member_ids = board.memberships.values_list("user_id", flat=True)
+        context["users"] = User.objects.filter(id__in=member_ids)
 
         return context
 
@@ -427,6 +428,12 @@ def add_task(request, list_id):
             task.position = task_list.tasks.count()
             task.created_by = request.user
             task.save()
+            assigned_ids = request.POST.getlist("assigned_to")
+            if assigned_ids:
+                valid_ids = BoardMembership.objects.filter(
+                    board=task_list.board, user_id__in=assigned_ids
+                ).values_list("user_id", flat=True)
+                task.assigned_to.set(list(valid_ids))
 
             # --- PARTE NUEVA PARA ETIQUETAS ---
             selected_tags = request.POST.getlist("tags")  # Captura los checkboxes
@@ -507,8 +514,14 @@ def edit_task(request, task_id):
     task.title = request.POST.get("title")
     task.description = request.POST.get("description")
     task.priority = request.POST.get("priority")
-    assigned_to_id = request.POST.get("assigned_to") or None
-    task.assigned_to_id = assigned_to_id
+    assigned_ids = request.POST.getlist("assigned_to")
+    if assigned_ids:
+        valid_ids = BoardMembership.objects.filter(
+            board=task.task_list.board, user_id__in=assigned_ids
+        ).values_list("user_id", flat=True)
+        task.assigned_to.set(list(valid_ids))
+    else:
+        task.assigned_to.clear()
 
     # Manejo de la fecha (puede venir vacía)
     due_date = request.POST.get("due_date")
