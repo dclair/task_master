@@ -92,6 +92,31 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-delete-task').forEach(btn => {
         btn.addEventListener('click', e => e.stopPropagation());
     });
+
+    // --- 4. BUSCADOR EN TIEMPO REAL ---
+    const searchInput = document.getElementById('taskSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.task-card');
+
+            cards.forEach(card => {
+                // Buscamos en el título y en la descripción (sacados de los data-attributes)
+                const title = card.getAttribute('data-title').toLowerCase();
+                const desc = card.getAttribute('data-desc').toLowerCase();
+
+                if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+                    card.style.display = "block"; // Se muestra si coincide
+                    card.classList.add('animate__animated', 'animate__fadeIn'); // Opcional: efecto visual
+                } else {
+                    card.style.display = "none"; // Se oculta si no coincide
+                }
+            });
+
+            // Opcional: Ocultar columnas vacías si no hay resultados (avísame si lo quieres)
+        });
+    }
+
 });
 
 function getCookie(name) {

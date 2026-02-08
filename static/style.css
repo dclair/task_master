@@ -203,3 +203,18 @@ a.badge:hover {
     margin-left: 5px;
     font-size: 0.8rem;
 }
+/* Estilos para el buscador de tareas */
+#taskSearch {
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+#taskSearch:focus {
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15) !important;
+    width: 300px; /* Se expande un poco al escribir */
+}
+
+/* Evita que las tarjetas ocultas ocupen espacio */
+.task-card[style*="display: none"] {
+    margin-bottom: 0 !important;
+}
