@@ -2,6 +2,23 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
         new bootstrap.Tooltip(el);
     });
+
+    const bindSpinner = (form, labelText, hideLabel) => {
+        if (!form) return;
+        form.addEventListener('submit', () => {
+            const btn = form.querySelector('button[type="submit"]');
+            if (!btn) return;
+            btn.disabled = true;
+            const spinner = btn.querySelector('.spinner-border');
+            const label = btn.querySelector('.label');
+            if (spinner) spinner.classList.remove('d-none');
+            if (label && !hideLabel) label.textContent = labelText;
+        });
+    };
+
+    bindSpinner(document.querySelector('.invite-form'), 'Enviando...');
+    bindSpinner(document.querySelector('.member-form'), 'Guardando...');
+    document.querySelectorAll('.role-form').forEach(form => bindSpinner(form, '', true));
     const updateProgressBar = () => {
         const total = document.querySelectorAll('.task-card').length;
         const done = document.querySelectorAll('.kanban-column[data-is-done="true"] .task-card').length;

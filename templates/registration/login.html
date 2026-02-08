@@ -16,6 +16,12 @@
                 <form method="post">
                     {% csrf_token %}
 
+                    {% if request.GET.email %}
+                    <div class="alert alert-info py-2 small mb-3">
+                        Usa este email para aceptar la invitación: <strong>{{ request.GET.email }}</strong>
+                    </div>
+                    {% endif %}
+
                     {% if form.non_field_errors %}
                     <div class="alert alert-danger py-2 small mb-3" role="alert">
                         {{ form.non_field_errors.0 }}
@@ -41,7 +47,7 @@
 
                 <div class="text-center mt-4">
                     <p class="small text-muted mb-0">¿No tienes cuenta?</p>
-                    <a href="{% url 'boards:signup' %}" class="text-primary fw-bold text-decoration-none small">Regístrate gratis</a>
+                    <a href="{% url 'boards:signup' %}?email={{ request.GET.email }}" class="text-primary fw-bold text-decoration-none small">Regístrate gratis</a>
                     <div class="mt-2">
                         <a href="{% url 'resend_activation' %}" class="text-muted small text-decoration-none">Reenviar activación</a>
                     </div>

@@ -155,6 +155,9 @@ LOGOUT_REDIRECT_URL = "login"
 # Activación de cuenta (segundos)
 ACTIVATION_TOKEN_TIMEOUT = 60 * 60 * 24  # 24 horas
 
+# Invitaciones a tableros (segundos)
+INVITE_TOKEN_TIMEOUT = 60 * 60 * 24 * 7  # 7 días
+
 # Correo desde el que se envían los mensajes
 DEFAULT_FROM_EMAIL = os.getenv("EMAIL_USER")
 

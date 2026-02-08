@@ -28,4 +28,11 @@ urlpatterns = [
         views.remove_member,
         name="remove_member",
     ),
+    path("<int:board_id>/invites/", views.invite_member, name="invite_member"),
+    path("invites/accept/<str:token>/", views.accept_invite, name="accept_invite"),
+    path(
+        "<int:board_id>/invites/<int:invite_id>/revoke/",
+        views.revoke_invite,
+        name="revoke_invite",
+    ),
 ]

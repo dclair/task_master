@@ -27,7 +27,7 @@ from django.urls import reverse_lazy
 from .forms import BoardForm, SignUpForm, CustomAuthenticationForm, ProfileForm, UserUpdateForm
 from .tokens import activation_token_generator
 from django.shortcuts import get_object_or_404, redirect
-from .models import Board, TaskList, Task, Tag, UserProfile, BoardMembership
+from .models import Board, TaskList, Task, Tag, UserProfile, BoardMembership, BoardInvite
 from .forms import TaskListForm, TaskForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -38,6 +38,8 @@ import os
 import logging
 from email.mime.image import MIMEImage
 from django.templatetags.static import static
+from django.core import signing
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +49,14 @@ class SignUpView(CreateView):
     form_class = SignUpForm
     success_url = reverse_lazy("login")
     template_name = "registration/signup.html"
+    initial = {}
+
+    def get_initial(self):
+        initial = super().get_initial()
+        email = self.request.GET.get("email")
+        if email:
+            initial["email"] = email
+        return initial
 
     def form_valid(self, form):
         user = form.save(commit=False)
@@ -104,6 +114,26 @@ def send_activation_success_email(request, user):
         text_body=text_body,
         html_body=html_body,
         to_emails=[user.email],
+    )
+
+
+def send_invite_email(request, invite):
+    invite_token = signing.dumps({"invite_id": invite.id})
+    invite_url = request.build_absolute_uri(
+        reverse("boards:accept_invite", args=[invite_token])
+    )
+    context = {
+        "invite": invite,
+        "invite_url": invite_url,
+    }
+    subject = f"Task Master | Invitación a {invite.board.title}"
+    html_body = render_to_string("registration/invite_email.html", context)
+    text_body = f"Has sido invitado/a a {invite.board.title}: {invite_url}"
+    send_html_email(
+        subject=subject,
+        text_body=text_body,
+        html_body=html_body,
+        to_emails=[invite.email],
     )
 
 
@@ -350,6 +380,7 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
         ).first()
         context["user_role"] = membership.role if membership else None
         context["memberships"] = board.memberships.select_related("user").all()
+        context["invites"] = board.invites.filter(accepted_at__isnull=True)
 
         # Etiquetas para el resumen superior y el modal
         context["board_tags"] = (
@@ -547,4 +578,76 @@ def remove_member(request, board_id, membership_id):
         return redirect("boards:board_detail", pk=board_id)
     membership.delete()
     messages.success(request, "Miembro eliminado.")
+    return redirect("boards:board_detail", pk=board_id)
+
+
+@login_required
+@require_POST
+def invite_member(request, board_id):
+    board = get_object_or_404(Board, id=board_id)
+    _require_owner(board, request.user)
+    email = request.POST.get("email", "").strip().lower()
+    role = request.POST.get("role", "viewer")
+    if role not in ["owner", "editor", "viewer"]:
+        role = "viewer"
+    if not email:
+        messages.error(request, "Email inválido.")
+        return redirect("boards:board_detail", pk=board_id)
+
+    invite, _ = BoardInvite.objects.update_or_create(
+        board=board,
+        email=email,
+        defaults={"role": role, "invited_by": request.user, "accepted_at": None},
+    )
+
+    try:
+        send_invite_email(request, invite)
+        messages.success(request, "Invitación enviada.")
+    except Exception:
+        logger.exception("Fallo al enviar invitación")
+        messages.error(request, "No se pudo enviar la invitación.")
+
+    return redirect("boards:board_detail", pk=board_id)
+
+
+def accept_invite(request, token):
+    try:
+        data = signing.loads(
+            token,
+            max_age=getattr(settings, "INVITE_TOKEN_TIMEOUT", 60 * 60 * 24 * 7),
+        )
+        invite_id = data.get("invite_id")
+    except Exception:
+        messages.error(request, "Invitación inválida o caducada.")
+        return redirect("boards:board_list")
+
+    invite = get_object_or_404(BoardInvite, id=invite_id)
+    if invite.accepted_at:
+        messages.info(request, "La invitación ya fue aceptada.")
+        return redirect("boards:board_detail", pk=invite.board.id)
+
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login')}?next={request.path}&email={invite.email}")
+
+    if request.user.email.lower() != invite.email.lower():
+        messages.error(request, "Esta invitación no corresponde a tu email.")
+        return redirect("boards:board_list")
+
+    BoardMembership.objects.update_or_create(
+        board=invite.board, user=request.user, defaults={"role": invite.role}
+    )
+    invite.accepted_at = timezone.now()
+    invite.save()
+    messages.success(request, "Invitación aceptada. Ya tienes acceso al tablero.")
+    return redirect("boards:board_detail", pk=invite.board.id)
+
+
+@login_required
+@require_POST
+def revoke_invite(request, board_id, invite_id):
+    board = get_object_or_404(Board, id=board_id)
+    _require_owner(board, request.user)
+    invite = get_object_or_404(BoardInvite, id=invite_id, board=board)
+    invite.delete()
+    messages.success(request, "Invitación revocada.")
     return redirect("boards:board_detail", pk=board_id)

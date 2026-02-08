@@ -31,7 +31,7 @@
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="text-uppercase text-muted small fw-bold mb-0">Miembros</h6>
             {% if user_role == "owner" %}
-            <form class="d-flex gap-2" method="post" action="{% url 'boards:add_member' board.id %}">
+            <form class="d-flex gap-2 member-form" method="post" action="{% url 'boards:add_member' board.id %}">
                 {% csrf_token %}
                 <input type="text" name="identifier" class="form-control form-control-sm rounded-pill" placeholder="Usuario o email" required>
                 <select name="role" class="form-select form-select-sm rounded-pill">
@@ -39,7 +39,10 @@
                     <option value="editor">Editor</option>
                     <option value="owner">Owner</option>
                 </select>
-                <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">Añadir</button>
+                <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">
+                    <span class="label">Añadir</span>
+                    <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                </button>
             </form>
             {% endif %}
         </div>
@@ -50,7 +53,7 @@
                 <span class="fw-bold">{{ m.user.username }}</span>
                 <span class="text-muted extra-small">({{ m.role }})</span>
                 {% if user_role == "owner" %}
-                <form method="post" action="{% url 'boards:update_member_role' board.id m.id %}" class="d-flex align-items-center gap-1">
+                <form method="post" action="{% url 'boards:update_member_role' board.id m.id %}" class="d-flex align-items-center gap-1 role-form">
                     {% csrf_token %}
                     <select name="role" class="form-select form-select-sm rounded-pill" style="min-width: 110px;">
                         <option value="viewer" {% if m.role == "viewer" %}selected{% endif %}>Viewer</option>
@@ -59,6 +62,7 @@
                     </select>
                     <button type="submit" class="btn btn-xs btn-outline-primary rounded-pill px-2" title="Guardar" aria-label="Guardar" data-bs-toggle="tooltip">
                         <i class="bi bi-check2"></i>
+                        <span class="spinner-border spinner-border-sm ms-1 d-none" role="status" aria-hidden="true"></span>
                     </button>
                 </form>
                 {% if m.user_id != board.owner_id %}
@@ -74,6 +78,43 @@
             {% endfor %}
         </div>
     </div>
+
+    {% if user_role == "owner" %}
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="text-uppercase text-muted small fw-bold mb-0">Invitaciones</h6>
+            <form class="d-flex gap-2 flex-wrap invite-form" method="post" action="{% url 'boards:invite_member' board.id %}">
+                {% csrf_token %}
+                <input type="email" name="email" class="form-control form-control-sm rounded-pill" placeholder="Email" required style="min-width: 220px;">
+                <select name="role" class="form-select form-select-sm rounded-pill">
+                    <option value="viewer">Viewer</option>
+                    <option value="editor">Editor</option>
+                    <option value="owner">Owner</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">
+                    <span class="label">Invitar</span>
+                    <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                </button>
+            </form>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            {% for inv in invites %}
+            <div class="badge bg-light text-dark border d-flex align-items-center gap-2 p-2">
+                <span class="fw-bold">{{ inv.email }}</span>
+                <span class="text-muted extra-small">({{ inv.role }})</span>
+                <form method="post" action="{% url 'boards:revoke_invite' board.id inv.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-xs btn-outline-danger rounded-pill px-2" title="Revocar" aria-label="Revocar" data-bs-toggle="tooltip">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </form>
+            </div>
+            {% empty %}
+            <span class="text-muted small">Sin invitaciones pendientes.</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
      
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div class="d-flex flex-wrap gap-2 align-items-center">

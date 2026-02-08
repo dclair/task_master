@@ -33,6 +33,25 @@ class BoardMembership(models.Model):
         return f"{self.user.username} - {self.board.title} ({self.role})"
 
 
+class BoardInvite(models.Model):
+    ROLE_CHOICES = BoardMembership.ROLE_CHOICES
+
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="invites")
+    email = models.EmailField()
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="viewer")
+    invited_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="sent_invites"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    accepted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("board", "email")
+
+    def __str__(self):
+        return f"{self.email} - {self.board.title} ({self.role})"
+
+
 class TaskList(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="lists")
     title = models.CharField(max_length=100)
