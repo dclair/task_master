@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        new bootstrap.Tooltip(el);
+    });
     const updateProgressBar = () => {
         const total = document.querySelectorAll('.task-card').length;
         const done = document.querySelectorAll('.kanban-column[data-is-done="true"] .task-card').length;

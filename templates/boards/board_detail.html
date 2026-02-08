@@ -50,19 +50,23 @@
                 <span class="fw-bold">{{ m.user.username }}</span>
                 <span class="text-muted extra-small">({{ m.role }})</span>
                 {% if user_role == "owner" %}
-                <form method="post" action="{% url 'boards:update_member_role' board.id m.id %}">
+                <form method="post" action="{% url 'boards:update_member_role' board.id m.id %}" class="d-flex align-items-center gap-1">
                     {% csrf_token %}
-                    <select name="role" class="form-select form-select-sm rounded-pill">
+                    <select name="role" class="form-select form-select-sm rounded-pill" style="min-width: 110px;">
                         <option value="viewer" {% if m.role == "viewer" %}selected{% endif %}>Viewer</option>
                         <option value="editor" {% if m.role == "editor" %}selected{% endif %}>Editor</option>
                         <option value="owner" {% if m.role == "owner" %}selected{% endif %}>Owner</option>
                     </select>
-                    <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-2">OK</button>
+                    <button type="submit" class="btn btn-xs btn-outline-primary rounded-pill px-2" title="Guardar" aria-label="Guardar" data-bs-toggle="tooltip">
+                        <i class="bi bi-check2"></i>
+                    </button>
                 </form>
                 {% if m.user_id != board.owner_id %}
                 <form method="post" action="{% url 'boards:remove_member' board.id m.id %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2">Quitar</button>
+                    <button type="submit" class="btn btn-xs btn-outline-danger rounded-pill px-2" title="Quitar" aria-label="Quitar" data-bs-toggle="tooltip">
+                        <i class="bi bi-x"></i>
+                    </button>
                 </form>
                 {% endif %}
                 {% endif %}
