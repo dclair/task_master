@@ -10,6 +10,22 @@
             <h2 class="fw-bold text-dark mb-0">{{ board.title }}</h2>
             <p class="text-muted small mb-0">{{ board.description|default:"Sin descripción adicional." }}</p>
         </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-3 mb-2">
+            {% for tag in board_tags %}
+            <div class="badge rounded-pill border text-dark d-flex align-items-center px-3 py-2 shadow-sm" 
+                style="background-color: {{ tag.color }}; font-size: 0.75rem;">
+                <span class="fw-bold me-2">{{ tag.name|upper }}</span>
+                <span class="bg-white bg-opacity-50 rounded-circle d-flex align-items-center justify-content-center" 
+                    style="width: 20px; height: 20px; font-size: 0.65rem;">
+                    {{ tag.num_tasks }}
+                </span>
+            </div>
+            {% empty %}
+            <small class="text-muted italic">No hay etiquetas en uso en este tablero.</small>
+            {% endfor %}
+        </div>
+        
         <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#listModal">
             <i class="bi bi-plus-lg me-1"></i>Añadir Lista
         </button>

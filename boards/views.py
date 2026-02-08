@@ -7,6 +7,7 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+from django.db.models import Count, Q
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -70,8 +71,18 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Añadimos todas las etiquetas al contexto para que el modal las vea
-        context["tags"] = Tag.objects.all()
+        board = self.get_object()
+
+        # Obtenemos las etiquetas que se están usando en ESTE tablero y contamos sus tareas
+        # Usamos el filtro interno para que solo cuente las tareas de este tablero específico
+        board_tags = (
+            Tag.objects.filter(tasks__task_list__board=board)
+            .annotate(num_tasks=Count("tasks", filter=Q(tasks__task_list__board=board)))
+            .distinct()
+        )
+
+        context["board_tags"] = board_tags
+        context["tags"] = Tag.objects.all()  # Para el modal de añadir/editar
         return context
 
 
