@@ -5,57 +5,52 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (taskModal) {
         taskModal.addEventListener('show.bs.modal', function (event) {
-            const trigger = event.relatedTarget;
+            const trigger = event.relatedTarget; // El botón que abrió el modal
             const form = document.getElementById('taskForm');
-            const modalTitle = taskModal.querySelector('.modal-title') || taskModal.querySelector('h5');
+            const modalTitle = taskModal.querySelector('.modal-title');
             const submitBtn = form.querySelector('button[type="submit"]');
 
-            // Limpiar checkboxes de etiquetas siempre al abrir
+            // Limpieza total antes de empezar
+            form.reset();
             form.querySelectorAll('[name="tags"]').forEach(cb => cb.checked = false);
 
-            if (trigger.classList.contains('task-card')) {
+            if (trigger.classList.contains('btn-edit-task')) {
                 // MODO EDICIÓN
+                const card = trigger.closest('.task-card');
+                const taskId = card.getAttribute('data-taskid');
+                
                 modalTitle.textContent = 'Editar Tarea';
                 submitBtn.textContent = 'Guardar Cambios';
-                submitBtn.className = 'btn btn-primary rounded-pill w-100 fw-bold';
 
-                const fields = ['title', 'description', 'priority', 'due_date'];
-                const dataMap = {
-                    'title': 'data-title', 
-                    'description': 'data-desc', 
-                    'priority': 'data-prio', 
-                    'due_date': 'data-date'
-                };
+                // Rellenar datos desde los atributos data- de la tarjeta
+                form.querySelector('[name="title"]').value = card.getAttribute('data-title') || '';
+                form.querySelector('[name="description"]').value = card.getAttribute('data-desc') || '';
+                form.querySelector('[name="priority"]').value = card.getAttribute('data-prio') || 'medium';
+                form.querySelector('[name="due_date"]').value = card.getAttribute('data-date') || '';
 
-                fields.forEach(field => {
-                    const input = form.querySelector(`[name="${field}"]`);
-                    if (input) input.value = trigger.getAttribute(dataMap[field]) || '';
-                });
-
-                // Marcar etiquetas existentes
-                const tagIds = (trigger.getAttribute('data-tags') || '').split(',').filter(id => id);
+                // Marcar etiquetas
+                const tagIds = (card.getAttribute('data-tags') || '').split(',').filter(id => id);
                 tagIds.forEach(id => {
                     const cb = form.querySelector(`[name="tags"][value="${id}"]`);
                     if (cb) cb.checked = true;
                 });
 
-                const taskId = trigger.getAttribute('data-taskid');
+                // URL de Edición (Evita el error 405)
                 form.action = `/boards/task/${taskId}/edit/`;
 
             } else {
                 // MODO CREACIÓN
                 modalTitle.textContent = 'Nueva Tarea';
                 submitBtn.textContent = 'Crear Tarea';
-                submitBtn.className = 'btn btn-success rounded-pill w-100 fw-bold';
                 
-                form.reset();
                 const listId = trigger.getAttribute('data-listid');
+                // URL de Creación (Evita el error 405)
                 form.action = `/boards/list/${listId}/add-task/`;
             }
         });
     }
 
-    // --- 2. LÓGICA DE DRAG & DROP (Con actualización de progreso) ---
+    // --- 2. LÓGICA DE DRAG & DROP (SortableJS) ---
     const containers = document.querySelectorAll('.tasks-container');
     const isFiltered = new URLSearchParams(window.location.search).has('tag');
 
@@ -66,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 animation: 150,
                 handle: '.task-card',
                 ghostClass: 'sortable-ghost',
-                
                 onEnd: function (evt) {
                     const taskId = evt.item.getAttribute('data-taskid');
                     const column = evt.to.closest('.kanban-column');
@@ -82,7 +76,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                     .then(response => {
                         if (response.ok) {
-                            // Actualización visual inmediata
                             updateProgressBar();
                         } else {
                             alert('Error al mover la tarea.');
@@ -99,54 +92,34 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput) {
         searchInput.addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('.task-card');
-
-            cards.forEach(card => {
+            document.querySelectorAll('.task-card').forEach(card => {
                 const title = (card.getAttribute('data-title') || '').toLowerCase();
                 const desc = (card.getAttribute('data-desc') || '').toLowerCase();
-
-                if (title.includes(searchTerm) || desc.includes(searchTerm)) {
-                    card.style.display = "block";
-                } else {
-                    card.style.display = "none";
-                }
+                card.style.display = (title.includes(searchTerm) || desc.includes(searchTerm)) ? "block" : "none";
             });
         });
     }
 
-    // --- 4. EVITAR CONFLICTO CLIC (Borrar vs Editar) ---
+    // --- 4. PREVENIR BURBUJEO EN BORRADO ---
     document.querySelectorAll('.btn-delete-task').forEach(btn => {
         btn.addEventListener('click', e => e.stopPropagation());
     });
 
 });
 
-// --- FUNCIONES AUXILIARES (Fuera del DOMContentLoaded para ser accesibles) ---
+// --- FUNCIONES AUXILIARES ---
 
-/**
- * Recalcula el progreso basándose en las columnas marcadas con data-is-done
- */
 function updateProgressBar() {
     const allTasks = document.querySelectorAll('.task-card').length;
     const doneTasks = document.querySelectorAll('.kanban-column[data-is-done="true"] .task-card').length;
-    
     const percentage = allTasks > 0 ? Math.round((doneTasks / allTasks) * 100) : 0;
-
     const progressBar = document.getElementById('main-progress-bar');
     const progressText = document.getElementById('progress-text');
 
-    if (progressBar) {
-        progressBar.style.width = percentage + '%';
-        progressBar.setAttribute('aria-valuenow', percentage);
-    }
-    if (progressText) {
-        progressText.textContent = percentage + '%';
-    }
+    if (progressBar) progressBar.style.width = percentage + '%';
+    if (progressText) progressText.textContent = percentage + '%';
 }
 
-/**
- * Obtiene el token CSRF de las cookies
- */
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

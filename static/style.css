@@ -160,3 +160,41 @@ body {
     box-shadow: 0 40px 80px rgba(0,0,0,0.3) !important; 
     border-radius: 40px !important;
 }
+
+/* --- Estilos del Selector de Etiquetas en Modal --- */
+.tag-item .btn-check + label {
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    opacity: 0.75;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    font-size: 0.65rem;
+    letter-spacing: 0.02em;
+}
+
+.tag-item .btn-check:checked + label {
+    opacity: 1 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+    border: 1.5px solid #000 !important; /* Resalta la etiqueta seleccionada */
+    color: #000 !important;
+}
+
+.tag-item .btn-check + label:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+/* --- Mejoras de legibilidad para el Modal --- */
+.extra-small {
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+}
+
+.form-label.text-muted {
+    margin-bottom: 0.4rem;
+}
+
+.modal-content {
+    border: none;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+}

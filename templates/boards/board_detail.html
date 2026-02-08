@@ -27,7 +27,6 @@
         </div>
     </div>
      
-
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div class="d-flex flex-wrap gap-2 align-items-center">
             {% for tag in board_tags %}
@@ -53,17 +52,11 @@
 <div class="kanban-wrapper">
     {% for list in board_lists %}
     <div class="kanban-column shadow-sm" 
-        {% if 'hecho' in list.title|lower or 'termin' in list.title|lower or 'completa' in list.title|lower or 'done' in list.title|lower %}
-            data-is-done="true"
-        {% endif %}>
+        {% if 'hecho' in list.title|lower or 'termin' in list.title|lower %} data-is-done="true" {% endif %}>
         <div class="kanban-column-header">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="d-flex align-items-center">
-                    <div class="icon-box rounded-3 me-2 d-flex align-items-center justify-content-center text-white 
-                        {% if 'hacer' in list.title|lower or 'pendient' in list.title|lower %}bg-secondary
-                        {% elif 'proces' in list.title|lower or 'haciendo' in list.title|lower %}bg-primary
-                        {% elif 'hecho' in list.title|lower or 'termin' in list.title|lower %}bg-success
-                        {% else %}bg-dark{% endif %}">
+                    <div class="icon-box rounded-3 me-2 d-flex align-items-center justify-content-center text-white bg-primary">
                         <i class="bi bi-list-task"></i>
                     </div>
                     <h6 class="column-title mb-0">{{ list.title|upper }}</h6>
@@ -72,7 +65,7 @@
                     <button class="btn btn-sm border-0 opacity-50 p-0" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
                     <ul class="dropdown-menu shadow-sm border-0">
                         <li>
-                            <form action="{% url 'boards:delete_list' list.id %}" method="post">
+                            <form action="{% url 'boards:delete_list' list.id %}" method="post" onsubmit="return confirm('¿Eliminar lista?');">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item text-danger small">Eliminar lista</button>
                             </form>
@@ -80,73 +73,53 @@
                     </ul>
                 </div>
             </div>
-            <div class="d-flex align-items-center justify-content-between opacity-75">
-                <span class="badge rounded-pill bg-light text-dark border extra-small">{{ list.tasks.count }} tareas</span>
-            </div>
         </div>
 
         <div class="tasks-container px-2">
             {% for task in list.tasks.all %}
-            
             <div class="task-card prio-{{ task.priority }}" 
                 data-taskid="{{ task.id }}"
                 data-title="{{ task.title }}"
                 data-desc="{{ task.description|default:'' }}"
                 data-prio="{{ task.priority }}"
                 data-date="{{ task.due_date|date:'Y-m-d\TH:i' }}"
-                data-tags="{% for tag in task.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
-                data-bs-toggle="modal" 
-                data-bs-target="#taskModal">
+                data-tags="{% for tag in task.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}">
                 
-                <div class="task-card-header">
-                    <div class="d-flex align-items-center text-muted" style="font-size: 0.65rem; font-weight: 600;">
-                        <i class="bi bi-clock-fill me-1 text-primary"></i>
-                        <span>{{ task.due_date|date:"d M, H:i"|default:"SIN FECHA" }}</span>
-                    </div>
-                    {% if task.assigned_to %}
-                        <div class="user-avatar-mini">{{ task.assigned_to.username|slice:":1"|upper }}</div>
-                    {% endif %}
-                </div>
-
                 <div class="task-card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div class="d-flex align-items-center overflow-hidden">
                             <i class="bi bi-grip-vertical text-muted fs-5 me-1"></i>
                             <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.85rem;">{{ task.title }}</h6>
                         </div>
-                        <form action="{% url 'boards:delete_task' task.id %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-delete-task text-danger p-0 border-0 bg-transparent opacity-50">
-                                <i class="bi bi-trash3" style="font-size: 0.8rem;"></i>
+                        <div class="d-flex gap-2">
+                            <button class="btn-edit-task text-primary p-0 border-0 bg-transparent opacity-50"
+                                    data-bs-toggle="modal" data-bs-target="#taskModal">
+                                <i class="bi bi-pencil-square" style="font-size: 0.8rem;"></i>
                             </button>
-                        </form>
+                            <form action="{% url 'boards:delete_task' task.id %}" method="post" onsubmit="return confirm('¿Borrar tarea?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-delete-task text-danger p-0 border-0 bg-transparent opacity-50">
+                                    <i class="bi bi-trash3" style="font-size: 0.8rem;"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
-
                     <div class="task-tags d-flex flex-wrap gap-1 mb-2">
                         {% for tag in task.tags.all %}
                         <span class="badge rounded-pill border text-dark" style="background-color: {{ tag.color }}; font-size: 0.6rem;">{{ tag.name|upper }}</span>
                         {% endfor %}
                     </div>
-
                     {% if task.description %}
-                        <p class="text-muted mb-0 text-truncate-2" style="font-size: 0.75rem; line-height: 1.4;">{{ task.description }}</p>
+                    <p class="text-muted mb-0 text-truncate-2" style="font-size: 0.75rem; line-height: 1.4;">{{ task.description }}</p>
                     {% endif %}
                 </div>
             </div>
-
-            {% empty %}
-                <div class="text-center py-3 border border-dashed rounded-3 opacity-25 mt-2">
-                    <small class="text-muted italic">Lista vacía</small>
-                </div>
             {% endfor %}
         </div>
 
         <div class="p-2 mt-auto">
             <button class="btn btn-sm w-100 text-start open-task-modal border-dashed py-2 fw-bold text-primary bg-white" 
-                    style="border: 2px dashed #0d6efd44; transition: all 0.2s ease;"
-                    data-bs-toggle="modal" 
-                    data-bs-target="#taskModal" 
-                    data-listid="{{ list.id }}">
+                    data-bs-toggle="modal" data-bs-target="#taskModal" data-listid="{{ list.id }}">
                 <i class="bi bi-plus-circle-fill me-2"></i>Añadir tarea
             </button>
         </div>
