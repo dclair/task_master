@@ -87,44 +87,53 @@
 
         <div class="tasks-container px-2">
             {% for task in list.tasks.all %}
+            
             <div class="task-card prio-{{ task.priority }}" 
-                    data-taskid="{{ task.id }}"
-                    data-title="{{ task.title }}"
-                    data-desc="{{ task.description|default:'' }}"
-                    data-prio="{{ task.priority }}"
-                    data-date="{{ task.due_date|date:'Y-m-d\TH:i' }}"
-                    data-tags="{% for tag in task.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
-                    data-bs-toggle="modal" 
-                    data-bs-target="#taskModal"
-                    style="cursor: pointer;">
+                data-taskid="{{ task.id }}"
+                data-title="{{ task.title }}"
+                data-desc="{{ task.description|default:'' }}"
+                data-prio="{{ task.priority }}"
+                data-date="{{ task.due_date|date:'Y-m-d\TH:i' }}"
+                data-tags="{% for tag in task.tags.all %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                data-bs-toggle="modal" 
+                data-bs-target="#taskModal">
                 
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div class="d-flex align-items-center overflow-hidden">
-                        <i class="bi bi-grip-vertical text-muted fs-5 me-1"></i>
-                        <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.85rem;">{{ task.title }}</h6>
+                <div class="task-card-header">
+                    <div class="d-flex align-items-center text-muted" style="font-size: 0.65rem; font-weight: 600;">
+                        <i class="bi bi-clock-fill me-1 text-primary"></i>
+                        <span>{{ task.due_date|date:"d M, H:i"|default:"SIN FECHA" }}</span>
                     </div>
-                    <form action="{% url 'boards:delete_task' task.id %}" method="post" class="ms-2">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-delete-task text-danger p-0 border-0 bg-transparent opacity-50"><i class="bi bi-trash3" style="font-size: 0.8rem;"></i></button>
-                    </form>
+                    {% if task.assigned_to %}
+                        <div class="user-avatar-mini">{{ task.assigned_to.username|slice:":1"|upper }}</div>
+                    {% endif %}
                 </div>
 
-                <div class="task-tags d-flex flex-wrap gap-1 mb-2">
-                    {% for tag in task.tags.all %}
-                    <span class="badge rounded-pill border text-dark" style="background-color: {{ tag.color }}; font-size: 0.6rem;">{{ tag.name|upper }}</span>
-                    {% endfor %}
-                </div>
-
-                {% if task.description %}
-                    <p class="text-muted mb-3 text-truncate-2" style="font-size: 0.75rem; line-height: 1.4;">{{ task.description }}</p>
-                {% endif %}
-
-                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                    <div class="d-flex align-items-center text-muted" style="font-size: 0.65rem;">
-                        <i class="bi bi-clock me-1"></i>{{ task.due_date|date:"d M H:i"|default:"Sin fecha" }}
+                <div class="task-card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center overflow-hidden">
+                            <i class="bi bi-grip-vertical text-muted fs-5 me-1"></i>
+                            <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.85rem;">{{ task.title }}</h6>
+                        </div>
+                        <form action="{% url 'boards:delete_task' task.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete-task text-danger p-0 border-0 bg-transparent opacity-50">
+                                <i class="bi bi-trash3" style="font-size: 0.8rem;"></i>
+                            </button>
+                        </form>
                     </div>
+
+                    <div class="task-tags d-flex flex-wrap gap-1 mb-2">
+                        {% for tag in task.tags.all %}
+                        <span class="badge rounded-pill border text-dark" style="background-color: {{ tag.color }}; font-size: 0.6rem;">{{ tag.name|upper }}</span>
+                        {% endfor %}
+                    </div>
+
+                    {% if task.description %}
+                        <p class="text-muted mb-0 text-truncate-2" style="font-size: 0.75rem; line-height: 1.4;">{{ task.description }}</p>
+                    {% endif %}
                 </div>
             </div>
+
             {% empty %}
                 <div class="text-center py-3 border border-dashed rounded-3 opacity-25 mt-2">
                     <small class="text-muted italic">Lista vacía</small>

@@ -3,229 +3,160 @@
    ========================================== */
 body { 
     font-family: 'Inter', sans-serif; 
-    background-color: #f8f9fa; 
+    background-color: #f1f2f4; 
+    margin: 0;
 }
 
-.extra-small { 
-    font-size: 0.7rem; 
-}
-
-/* Animaciones de Tarjetas (Home/Dashboard) */
-.card-hover { 
-    transition: all 0.3s ease; 
-}
-
-.card-hover:hover { 
-    transform: translateY(-5px); 
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; 
-}
+.extra-small { font-size: 0.7rem; }
 
 /* ==========================================
-   2. TABLERO KANBAN (ESTRUCTURA)
+   2. TABLERO KANBAN (CONTENEDOR GLOBAL)
    ========================================== */
-
 .kanban-wrapper {
     display: flex;
     overflow-x: auto;
-    padding-bottom: 25px; 
-    gap: 1.25rem;
+    padding: 30px; 
+    gap: 3.5rem; /* Separación generosa entre listas */
     min-height: calc(100vh - 200px);
     align-items: flex-start;
+    -webkit-overflow-scrolling: touch;
 }
 
+/* ==========================================
+   3. COLUMNAS / LISTAS (CORRECCIÓN DE REDONDEO)
+   ========================================== */
 .kanban-column {
-    width: 300px;
-    min-width: 300px;
-    background-color: #f1f2f4;
-    border-radius: 12px;
-    padding: 0.75rem;
+    width: 310px;
+    min-width: 310px;
+    background-color: #ebedf0;
+    
+    /* ULTRA REDONDEO GARANTIZADO */
+    border-radius: 40px !important; 
+    
+    /* IMPORTANTE: Padding a 0 para que el contenido llegue a la curva */
+    padding: 0 !important; 
+    
     display: flex;
     flex-direction: column;
-    max-height: 100%;
-    border: 1px solid #e2e8f0;
-    transition: border-color 0.3s ease;
+    max-height: 85vh;
+    border: 1px solid #dcdfe4;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    
+    /* CORTA LOS ELEMENTOS CUADRADOS INTERNOS */
+    overflow: hidden !important; 
 }
 
-.kanban-column:hover {
-    border-color: #cbd5e1;
-}
-
-/* ==========================================
-   3. ENCABEZADOS DE COLUMNA
-   ========================================== */
+/* Cabecera de la lista con su propio padding */
 .kanban-column-header {
-    background-color: #ffffff;
-    padding: 15px 12px;
-    border-radius: 10px 10px 0 0;
-    border-bottom: 2px solid #edf2f7;
-    margin: -0.75rem -0.75rem 1rem -0.75rem; 
-    position: relative;
+    padding: 25px 20px 15px 20px;
+    background-color: transparent; /* Mantiene el color de la columna */
 }
 
-.column-title {
-    font-weight: 800;
-    color: #1e293b;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-}
-
-.icon-box {
-    width: 32px;
-    height: 32px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.08);
-    transition: transform 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.kanban-column:hover .icon-box {
-    transform: scale(1.1);
-}
-
-/* ==========================================
-   4. TARJETAS DE TAREAS (DISEÑO ÚNICO)
-   ========================================== */
+/* Contenedor de tareas con padding lateral */
 .tasks-container {
     overflow-y: auto;
-    max-height: calc(100vh - 350px);
-    padding: 2px;
+    padding: 0 15px 10px 15px;
+    scrollbar-width: thin;
 }
 
+/* ==========================================
+   4. TARJETAS DE TAREAS (DISEÑO CÁPSULA)
+   ========================================== */
 .task-card {
-    background: #ffffff;
-    border-radius: 10px;
-    padding: 14px !important;
-    margin-bottom: 12px !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    background: #ffffff !important;
+    border-radius: 22px !important; /* Tarjetas también muy redondeadas */
+    padding: 0 !important; 
+    margin-bottom: 18px !important; 
     border: 1px solid #e2e8f0;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    /* CURSOR PARA DRAG & DROP */
-    cursor: grab !important; 
-    user-select: none;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
 }
 
 .task-card:hover {
-    border-color: #3b82f6; 
-    transform: translateY(-2px); 
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 15px 25px rgba(0,0,0,0.1);
 }
 
-.task-card:active {
-    cursor: grabbing !important;
-    transform: scale(0.98);
+/* Barra lateral de prioridad */
+.task-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 8px;
+    z-index: 1;
 }
 
-/* Indicadores de prioridad */
-.prio-high { border-left: 5px solid #ef4444 !important; }
-.prio-medium { border-left: 5px solid #f59e0b !important; }
-.prio-low { border-left: 5px solid #10b981 !important; }
+.prio-high::before { background-color: #ef4444; }
+.prio-medium::before { background-color: #f59e0b; }
+.prio-low::before { background-color: #10b981; }
 
-/* Elementos internos de la tarjeta */
-.btn-delete-task {
-    opacity: 0.3;
-    transition: opacity 0.2s;
-}
-
-.task-card:hover .btn-delete-task {
-    opacity: 1;
-}
-
-.text-truncate-2 {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-
-  line-clamp: 2;          /* propiedad estándar */
-  -webkit-line-clamp: 2;  /* compatibilidad */
-}
-
-
-.user-avatar-mini {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
+.task-card-header {
+    background-color: #f8fafc;
+    padding: 12px 14px 10px 24px;
+    border-bottom: 1px solid #edf2f7;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    font-size: 0.65rem;
-    background-color: #e2e8f0;
-    color: #475569;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.task-card-body {
+    padding: 14px 16px 18px 24px;
 }
 
 /* ==========================================
-   5. ESTILOS DRAG & DROP (SORTABLE JS)
+   5. VISTA MÓVIL (MÁXIMA DEFINICIÓN)
    ========================================== */
-.sortable-ghost {
-    opacity: 0.3 !important;
-    background: #cbd5e1 !important;
-    border: 2px dashed #64748b !important;
+@media (max-width: 768px) {
+    .kanban-wrapper {
+        padding: 20px;
+        gap: 7rem; /* Espacio gigante entre islas en móvil */
+    }
+    
+    .kanban-column {
+        width: 88vw;
+        min-width: 88vw;
+        border-radius: 50px !important; /* Más redondeado aún en móvil */
+        box-shadow: 0 25px 50px rgba(0,0,0,0.12);
+    }
+
+    .task-card {
+        margin-bottom: 24px !important;
+        border-radius: 28px !important;
+    }
 }
 
-.sortable-drag {
-    transform: rotate(3deg) !important; 
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2) !important;
-    opacity: 0.9;
-}
-
-
-/* Evita que el clic en el botón de borrar active el modal de la tarjeta padre */
-.btn-delete-task {
-    position: relative;
-    z-index: 10;
-}
-
-/* Estilos para las etiquetas en el tablero */
-.badge .bg-white.bg-opacity-50 {
-    color: #1e293b;
+/* ==========================================
+   6. ELEMENTOS UI ADICIONALES
+   ========================================== */
+.column-title {
     font-weight: 800;
-    border: 1px solid rgba(0,0,0,0.05);
+    color: #44546f;
+    font-size: 0.9rem;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
 }
 
-
-/* Feedback visual para los filtros */
-a.badge:hover {
-    filter: brightness(0.9);
-    transform: translateY(-1px);
-    transition: all 0.2s ease;
+.icon-box {
+    width: 38px; height: 38px; border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Resaltar la etiqueta activa */
-.badge.border-dark {
-    box-shadow: 0 0 0 2px rgba(0,0,0,0.1) !important;
-    position: relative;
+/* Botón "Añadir tarea" estilizado para el redondeo */
+.p-2.mt-auto {
+    padding: 15px 20px 25px 20px !important;
 }
 
-.badge.border-dark::after {
-    content: '✓';
-    margin-left: 5px;
-    font-size: 0.8rem;
-}
-/* Estilos para el buscador de tareas */
-#taskSearch {
-    background-color: #ffffff;
-    transition: all 0.3s ease;
+.sortable-ghost { 
+    opacity: 0.1; 
+    background: #cbd5e1 !important; 
+    border-radius: 40px !important;
 }
 
-#taskSearch:focus {
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15) !important;
-    width: 300px; /* Se expande un poco al escribir */
-}
-
-/* Evita que las tarjetas ocultas ocupen espacio */
-.task-card[style*="display: none"] {
-    margin-bottom: 0 !important;
-}
-
-/* Estilos para la barra de progreso de tareas completadas*/
-.progress {
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-    overflow: visible; /* Permite efectos de brillo si los añades */
-}
-
-.progress-bar {
-    transition: width 0.6s ease; /* Hace que el cambio sea suave */
-    box-shadow: 0 2px 4px rgba(25, 135, 84, 0.3);
+.sortable-drag { 
+    transform: rotate(4deg) !important; 
+    box-shadow: 0 40px 80px rgba(0,0,0,0.3) !important; 
+    border-radius: 40px !important;
 }
