@@ -15,7 +15,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from .forms import BoardForm
 from django.shortcuts import get_object_or_404, redirect
-from .models import Board, TaskList, Task
+from .models import Board, TaskList, Task, Tag
 from .forms import TaskListForm, TaskForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -68,6 +68,12 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
             raise PermissionDenied
         return board
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Añadimos todas las etiquetas al contexto para que el modal las vea
+        context["tags"] = Tag.objects.all()
+        return context
+
 
 # Vista para añadir una Lista
 def add_list(request, board_id):
@@ -83,7 +89,7 @@ def add_list(request, board_id):
     return redirect("boards:board_detail", pk=board_id)
 
 
-# Vista para añadir una Tarea
+# funcion para añadir una Tarea
 def add_task(request, list_id):
     task_list = get_object_or_404(TaskList, id=list_id, board__owner=request.user)
     if request.method == "POST":
@@ -93,10 +99,14 @@ def add_task(request, list_id):
             task.task_list = task_list
             task.position = task_list.tasks.count()
             task.save()
+
+            # --- PARTE NUEVA PARA ETIQUETAS ---
+            selected_tags = request.POST.getlist("tags")  # Captura los checkboxes
+            task.tags.set(selected_tags)  # Guarda las etiquetas en la tarea
     return redirect("boards:board_detail", pk=task_list.board.id)
 
 
-# Vista para eliminar una Lista
+# funcion para eliminar una Lista
 @login_required
 @require_POST
 def delete_list(request, list_id):
@@ -107,7 +117,7 @@ def delete_list(request, list_id):
     return redirect("boards:board_detail", pk=board_id)
 
 
-# Vista para eliminar una Tarea
+# funcion para eliminar una Tarea
 @login_required
 @require_POST
 def delete_task(request, task_id):
@@ -118,7 +128,7 @@ def delete_task(request, task_id):
     return redirect("boards:board_detail", pk=board_id)
 
 
-# Vista para mover una Tarea
+# funcion para mover una Tarea
 @login_required
 def move_task(request):
     if request.method == "POST":
@@ -139,7 +149,7 @@ def move_task(request):
     return JsonResponse({"status": "error"}, status=400)
 
 
-# Vista para editar una Tarea
+# funcion para editar una Tarea
 @login_required
 @require_POST
 def edit_task(request, task_id):
@@ -155,4 +165,8 @@ def edit_task(request, task_id):
     task.due_date = due_date if due_date else None
 
     task.save()
+
+    # --- PARTE NUEVA PARA ETIQUETAS ---
+    selected_tags = request.POST.getlist("tags")
+    task.tags.set(selected_tags)  # Actualiza la lista de etiquetas
     return redirect("boards:board_detail", pk=task.task_list.board.id)

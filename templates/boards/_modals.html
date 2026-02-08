@@ -32,6 +32,20 @@
 
                 <div class="modal-body">
                     <div class="mb-3">
+                        <label class="small fw-bold text-muted">ETIQUETAS</label>
+                        <div class="d-flex flex-wrap gap-2 p-2 border rounded-4 bg-light">
+                            {% for tag in tags %} <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="tags" value="{{ tag.id }}" id="tag{{ tag.id }}">
+                                <label class="form-check-label small" for="tag{{ tag.id }}">
+                                    <span class="badge rounded-pill text-dark border" style="background-color: {{ tag.color }};">
+                                        {{ tag.name }}
+                                    </span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
                         <label class="small fw-bold text-muted">TÍTULO</label>
                         <input type="text" name="title" class="form-control rounded-pill" required>
                     </div>

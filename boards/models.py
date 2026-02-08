@@ -26,6 +26,24 @@ class TaskList(models.Model):
         return f"{self.title} ({self.board.title})"
 
 
+# Modelo para etiquetas (tags) de tareas
+class Tag(models.Model):
+    # Colores pastel elegantes
+    COLOR_CHOICES = [
+        ("#d1e7dd", "Verde"),
+        ("#f8d7da", "Rojo"),
+        ("#fff3cd", "Amarillo"),
+        ("#cff4fc", "Azul"),
+        ("#e2e3e5", "Gris"),
+        ("#f3e5f5", "Morado"),
+    ]
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=7, choices=COLOR_CHOICES, default="#cff4fc")
+
+    def __str__(self):
+        return self.name
+
+
 class Task(models.Model):
     PRIORITY_CHOICES = [
         ("low", "Baja"),
@@ -47,6 +65,7 @@ class Task(models.Model):
     due_date = models.DateTimeField(null=True, blank=True)
     position = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    tags = models.ManyToManyField(Tag, blank=True, related_name="tasks")
 
     class Meta:
         ordering = ["position"]
