@@ -19,6 +19,8 @@ from .models import Board, TaskList, Task
 from .forms import TaskListForm, TaskForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+import json
+from django.http import JsonResponse
 
 
 # Vista para el Registro de Usuarios
@@ -114,3 +116,24 @@ def delete_task(request, task_id):
     board_id = task.task_list.board.id
     task.delete()
     return redirect("boards:board_detail", pk=board_id)
+
+
+# Vista para mover una Tarea
+@login_required
+def move_task(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        task_id = data.get("task_id")
+        new_list_id = data.get("new_list_id")
+
+        # Buscamos la tarea y la nueva lista
+        task = get_object_or_404(Task, id=task_id, task_list__board__owner=request.user)
+        new_list = get_object_or_404(
+            TaskList, id=new_list_id, board__owner=request.user
+        )
+
+        task.task_list = new_list
+        task.save()
+
+        return JsonResponse({"status": "ok"})
+    return JsonResponse({"status": "error"}, status=400)

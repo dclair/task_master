@@ -76,34 +76,37 @@
 
         <div class="tasks-container px-2">
             {% for task in list.tasks.all %}
-            <div class="task-card prio-{{ task.priority }} p-2">
-                <div class="d-flex justify-content-between align-items-start">
-                    <h6 class="mb-1 fw-bold text-dark pe-3" style="font-size: 0.85rem; line-height: 1.2;">
-                        {{ task.title }}
-                    </h6>
+            <div class="task-card prio-{{ task.priority }}" data-taskid="{{ task.id }}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center overflow-hidden">
+                        <i class="bi bi-grip-vertical text-muted fs-5 me-1" style="cursor: grab;"></i>
+                        <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.85rem;">
+                            {{ task.title }}
+                        </h6>
+                    </div>
                     
                     <form action="{% url 'boards:delete_task' task.id %}" method="post" 
-                        onsubmit="return confirm('¿Eliminar la tarea?');" class="ms-auto">
+                        onsubmit="return confirm('¿Eliminar la tarea?');" class="ms-2">
                         {% csrf_token %}
-                        <button type="submit" class="btn-delete-task text-danger p-0 border-0 bg-transparent" title="Eliminar tarea">
+                        <button type="submit" class="btn-delete-task text-danger p-0 border-0 bg-transparent opacity-50">
                             <i class="bi bi-trash3" style="font-size: 0.8rem;"></i>
                         </button>
                     </form>
                 </div>
 
                 {% if task.description %}
-                    <p class="text-muted mb-2 text-truncate-2" style="font-size: 0.75rem; line-height: 1.3;">
+                    <p class="text-muted mb-3 text-truncate-2" style="font-size: 0.75rem; line-height: 1.4;">
                         {{ task.description }}
                     </p>
                 {% endif %}
 
-                <div class="d-flex justify-content-between align-items-center border-top pt-1 mt-1">
-                    <span class="badge bg-light text-dark border extra-small">
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                    <div class="d-flex align-items-center text-muted" style="font-size: 0.65rem;">
                         <i class="bi bi-clock me-1"></i>
-                        {{ task.due_date|date:"d M H:i"|default:"--" }}
-                    </span>
+                        {{ task.due_date|date:"d M H:i"|default:"Sin fecha" }}
+                    </div>
                     {% if task.assigned_to %}
-                        <div class="user-avatar-mini" title="Asignado a {{ task.assigned_to.username }}">
+                        <div class="user-avatar-mini shadow-sm" title="Asignado a {{ task.assigned_to.username }}">
                             {{ task.assigned_to.username|slice:":1"|upper }}
                         </div>
                     {% endif %}
