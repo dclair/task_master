@@ -13,14 +13,17 @@ select,
 textarea {
     font-family: 'Overpass', sans-serif;
 }
+body.user-select-none {
+    user-select: none;
+}
 .extra-small { font-size: 0.7rem; }
 
 /* 2. TABLERO KANBAN */
-.kanban-wrapper { display: flex; overflow-x: auto; padding: 30px; gap: 3.5rem; min-height: calc(100vh - 200px); align-items: flex-start; }
+.kanban-wrapper { display: flex; overflow-x: auto; padding: 24px; gap: 1.75rem; min-height: calc(100vh - 200px); align-items: flex-start; }
 
 /* 3. COLUMNAS */
 .kanban-column {
-    width: 310px; min-width: 310px; background-color: #f3f4f6; border-radius: 40px !important; 
+    width: 275px; min-width: 275px; background-color: #f3f4f6; border-radius: 40px !important; 
     padding: 0 !important; display: flex; flex-direction: column; max-height: 85vh;
     border: 1px solid #dcdfe4; box-shadow: 0 8px 20px rgba(0,0,0,0.06); overflow: hidden !important; 
 }
@@ -32,6 +35,81 @@ textarea {
     background: #ffffff !important; border-radius: 0 !important; margin-bottom: 18px !important; 
     border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(15,23,42,0.06); transition: all 0.25s ease;
     overflow: hidden; position: relative; cursor: default;
+}
+.activity-panel {
+    position: sticky;
+    top: 90px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 12px;
+}
+.activity-collapse.collapse:not(.show) {
+    display: none;
+}
+@media (min-width: 992px) {
+    .activity-collapse.collapse {
+        display: block !important;
+        height: auto !important;
+        visibility: visible !important;
+    }
+}
+.filters-collapse.collapse:not(.show) {
+    display: none;
+}
+@media (min-width: 992px) {
+    .filters-collapse.collapse {
+        display: block !important;
+        height: auto !important;
+        visibility: visible !important;
+    }
+}
+.activity-panel .section-title {
+    font-size: 0.7rem;
+}
+.activity-panel .text-muted.small,
+.activity-panel .text-muted.extra-small,
+.activity-panel .fw-bold {
+    font-size: 0.72rem;
+}
+.activity-panel .btn,
+.activity-panel .form-select {
+    font-size: 0.65rem;
+}
+.board-layout {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+.board-left {
+    flex: 0 0 var(--activity-panel-width, 240px);
+    min-width: 200px;
+}
+.board-right {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.board-resizer {
+    width: 6px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    cursor: col-resize;
+    height: 120px;
+    margin-top: 8px;
+}
+.board-resizer:hover {
+    background: #cbd5e1;
+}
+@media (max-width: 992px) {
+    .board-layout {
+        flex-direction: column;
+    }
+    .board-resizer {
+        display: none;
+    }
+    .board-left {
+        flex: 1 1 auto;
+        width: 100%;
+    }
 }
 .filter-hidden,
 .page-hidden {

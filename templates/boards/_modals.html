@@ -1,7 +1,7 @@
 <div class="modal fade" id="taskModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-            <form id="taskForm" method="post">
+            <form id="taskForm" method="post" class="task-form">
                 {% csrf_token %}
                 <div class="modal-header border-0 pb-0 pt-4 px-4">
                     <h5 class="modal-title fw-bold">Tarea</h5>
@@ -71,7 +71,10 @@
                 </div>
 
                 <div class="p-4 pt-0">
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow-sm">Guardar Tarea</button>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow-sm">
+                        <span class="label">Guardar Tarea</span>
+                        <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                    </button>
                 </div>
             </form>
         </div>

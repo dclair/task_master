@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     bindSpinner(document.querySelector('.invite-form'), 'Enviando...');
     bindSpinner(document.querySelector('.member-form'), 'Guardando...');
+    bindSpinner(document.querySelector('.task-form'), 'Guardando...');
     document.querySelectorAll('.role-form').forEach(form => bindSpinner(form, '', true));
     const updateProgressBar = () => {
         const total = document.querySelectorAll('.task-card').length;
@@ -83,6 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
             column.setAttribute('data-page', '1');
             updatePagination(column);
         });
+        updateStatusSummary();
     };
 
     const updatePrioritySummary = () => {
@@ -102,8 +104,27 @@ document.addEventListener('DOMContentLoaded', function() {
         if (lowEl) lowEl.textContent = low;
     };
 
+    const updateStatusSummary = () => {
+        const columns = document.querySelectorAll('.kanban-column');
+        let todo = 0, doing = 0, done = 0;
+        columns.forEach(column => {
+            const status = column.getAttribute('data-status') || 'other';
+            const visibleCards = column.querySelectorAll('.task-card:not(.filter-hidden)').length;
+            if (status === 'todo') todo += visibleCards;
+            else if (status === 'doing') doing += visibleCards;
+            else if (status === 'done') done += visibleCards;
+        });
+        const todoEl = document.getElementById('status-todo-count');
+        const doingEl = document.getElementById('status-doing-count');
+        const doneEl = document.getElementById('status-done-count');
+        if (todoEl) todoEl.textContent = todo;
+        if (doingEl) doingEl.textContent = doing;
+        if (doneEl) doneEl.textContent = done;
+    };
+
     updateProgressBar();
     updatePrioritySummary();
+    updateStatusSummary();
     applyFilters();
 
     const taskModal = document.getElementById('taskModal');
@@ -198,6 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
             applyFilters();
+            updateStatusSummary();
         };
         badge.addEventListener('click', activate);
         badge.addEventListener('keydown', (e) => {
@@ -218,6 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
             applyFilters();
+            updateStatusSummary();
         };
         badge.addEventListener('click', activate);
         badge.addEventListener('keydown', (e) => {
@@ -227,6 +250,44 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    const resizer = document.querySelector('.board-resizer');
+    const boardLayout = document.querySelector('.board-layout');
+    if (resizer && boardLayout) {
+        let isDragging = false;
+        const minWidth = 200;
+        const maxWidth = 480;
+
+        const onMove = (e) => {
+            if (!isDragging) return;
+            const rect = boardLayout.getBoundingClientRect();
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            const next = Math.max(minWidth, Math.min(maxWidth, x));
+            boardLayout.style.setProperty('--activity-panel-width', `${next}px`);
+        };
+
+        const onUp = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            document.body.classList.remove('user-select-none');
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('touchend', onUp);
+        };
+
+        const onDown = (e) => {
+            isDragging = true;
+            document.body.classList.add('user-select-none');
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+            document.addEventListener('touchmove', onMove, { passive: true });
+            document.addEventListener('touchend', onUp);
+        };
+
+        resizer.addEventListener('mousedown', onDown);
+        resizer.addEventListener('touchstart', onDown, { passive: true });
+    }
 });
 
 function getCookie(name) {

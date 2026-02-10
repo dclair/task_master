@@ -72,11 +72,21 @@
     </div>
     {% endif %}
 
-    <div class="section-box mb-4">
+    <div class="board-layout">
+    <div class="board-left">
+    <div class="section-box mb-4 activity-panel">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
             <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
                 <i class="bi bi-activity"></i>Actividad
             </h6>
+            <button class="btn btn-xs btn-outline-secondary rounded-pill px-3 d-lg-none"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#activityCollapse"
+                    aria-expanded="false"
+                    aria-controls="activityCollapse">
+                Ver actividad
+            </button>
             <div class="d-flex gap-2 align-items-center">
                 <form method="get" class="d-flex gap-2 align-items-center">
                     <select name="activity" class="form-select form-select-sm rounded-pill">
@@ -92,7 +102,8 @@
                 </a>
             </div>
         </div>
-        <div class="d-flex flex-column gap-2">
+        <div id="activityCollapse" class="collapse activity-collapse">
+        <div class="d-flex flex-column gap-1">
             {% for act in activities %}
             <div class="d-flex justify-content-between align-items-start border rounded-3 p-2 bg-white">
                 <div>
@@ -129,12 +140,27 @@
             {% endif %}
         </div>
         {% endif %}
-    </div>
-     
-    <div class="section-box mb-4">
-        <div class="section-title text-uppercase text-muted extra-small fw-bold mb-2">
-            <i class="bi bi-funnel"></i>Filtros
         </div>
+    </div>
+    </div>
+    <div class="board-resizer" aria-hidden="true"></div>
+     
+    <div class="board-right">
+    <div class="section-box mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="section-title text-uppercase text-muted extra-small fw-bold mb-0">
+                <i class="bi bi-funnel"></i>Filtros
+            </div>
+            <button class="btn btn-xs btn-outline-secondary rounded-pill px-3 d-lg-none"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#filtersCollapse"
+                    aria-expanded="false"
+                    aria-controls="filtersCollapse">
+                Ver filtros
+            </button>
+        </div>
+        <div id="filtersCollapse" class="collapse filters-collapse">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
         <div class="d-flex flex-wrap gap-2 align-items-center">
             {% for tag in board_tags %}
@@ -161,13 +187,13 @@
             <i class="bi bi-layers me-1"></i>Estado
         </div>
         <span class="badge rounded-pill text-bg-info extra-small status-filter" role="button" tabindex="0" data-status="todo">
-            Por hacer
+            Por hacer: <span id="status-todo-count">0</span>
         </span>
         <span class="badge rounded-pill text-bg-warning extra-small status-filter" role="button" tabindex="0" data-status="doing">
-            En proceso
+            En proceso: <span id="status-doing-count">0</span>
         </span>
         <span class="badge rounded-pill text-bg-success extra-small status-filter" role="button" tabindex="0" data-status="done">
-            Completadas
+            Completadas: <span id="status-done-count">0</span>
         </span>
         <div class="text-muted extra-small fw-bold text-uppercase ms-2 me-2">
             <i class="bi bi-exclamation-triangle me-1"></i>Prioridad
@@ -193,9 +219,8 @@
             </a>
         </div>
     </div>
-</div>
 
-<div class="kanban-wrapper">
+    <div class="kanban-wrapper">
     {% for list in board_lists %}
     <div class="kanban-column shadow-sm"
          data-status="{% if 'por hacer' in list.title|lower or 'pendiente' in list.title|lower %}todo{% elif 'proceso' in list.title|lower or 'curso' in list.title|lower %}doing{% elif 'hecho' in list.title|lower or 'termin' in list.title|lower or 'complet' in list.title|lower or 'finaliz' in list.title|lower %}done{% else %}other{% endif %}"
@@ -310,13 +335,16 @@
         </div>
     </div>
     {% endfor %}
+    </div>
+    </div>
+    </div>
 </div>
 
-<div class="section-box mt-4 mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
-            <i class="bi bi-people"></i>Miembros
-        </h6>
+    <div class="section-box mt-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
+                <i class="bi bi-people"></i>Miembros
+            </h6>
         {% if user_role == "owner" %}
         <form class="d-flex gap-2 member-form" method="post" action="{% url 'boards:add_member' board.id %}">
             {% csrf_token %}
