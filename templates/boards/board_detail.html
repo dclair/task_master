@@ -17,7 +17,9 @@
 
     <div class="section-box mt-3 mb-4">
         <div class="d-flex justify-content-between align-items-end mb-1">
-            <span class="section-title extra-small fw-bold text-muted text-uppercase">Progreso del Tablero</span>
+            <span class="section-title extra-small fw-bold text-muted text-uppercase">
+                <i class="bi bi-speedometer2"></i>Progreso del Tablero
+            </span>
             <span id="progress-text" class="extra-small fw-bold text-primary">{{ progress|default:"0" }}%</span>
         </div>
         <div class="progress" style="height: 8px; border-radius: 10px; background-color: #e9ecef;">
@@ -30,7 +32,9 @@
     {% if user_role == "owner" %}
     <div class="section-box mb-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
-            <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">Invitaciones</h6>
+            <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
+                <i class="bi bi-envelope-plus"></i>Invitaciones
+            </h6>
             <form class="invite-form d-flex gap-2 flex-nowrap align-items-center px-2 py-2 rounded-pill border" method="post" action="{% url 'boards:invite_member' board.id %}">
                 {% csrf_token %}
                 <input type="text" name="username" class="form-control form-control-sm rounded-pill border-0" placeholder="Usuario" required style="min-width: 180px;">
@@ -70,7 +74,9 @@
 
     <div class="section-box mb-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
-            <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">Actividad</h6>
+            <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
+                <i class="bi bi-activity"></i>Actividad
+            </h6>
             <div class="d-flex gap-2 align-items-center">
                 <form method="get" class="d-flex gap-2 align-items-center">
                     <select name="activity" class="form-select form-select-sm rounded-pill">
@@ -107,7 +113,9 @@
     </div>
      
     <div class="section-box mb-4">
-        <div class="section-title text-uppercase text-muted small fw-bold mb-2">Filtros</div>
+        <div class="section-title text-uppercase text-muted small fw-bold mb-2">
+            <i class="bi bi-funnel"></i>Filtros
+        </div>
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
         <div class="d-flex flex-wrap gap-2 align-items-center">
             {% for tag in board_tags %}
@@ -130,7 +138,9 @@
         </div>
     </div>
     <div class="priority-summary d-flex flex-wrap gap-2 align-items-center mt-2">
-        <div class="text-muted extra-small fw-bold text-uppercase me-2">Prioridad</div>
+        <div class="text-muted extra-small fw-bold text-uppercase me-2">
+            <i class="bi bi-exclamation-triangle me-1"></i>Prioridad
+        </div>
         <span class="badge rounded-pill text-bg-danger extra-small priority-filter" role="button" tabindex="0" data-priority="high">
             Alta: <span id="prio-high-count">0</span>
         </span>
@@ -141,7 +151,9 @@
             Baja: <span id="prio-low-count">0</span>
         </span>
         <div class="ms-auto d-flex align-items-center gap-2">
-            <div class="text-muted extra-small fw-bold text-uppercase me-1">Exportar</div>
+            <div class="text-muted extra-small fw-bold text-uppercase me-1">
+                <i class="bi bi-download me-1"></i>Exportar
+            </div>
             <a href="{% url 'boards:export_tasks_csv' board.id %}" class="btn btn-xs btn-outline-secondary rounded-pill px-3">
                 <i class="bi bi-filetype-csv me-1"></i>CSV
             </a>
@@ -190,7 +202,14 @@
                 <div class="task-card-header">
                     <div class="d-flex align-items-center text-muted" style="font-size: 0.65rem; font-weight: 600;">
                         <i class="bi bi-clock-fill me-1 text-primary"></i>
-                        <span>{{ task.due_date|date:"d M, H:i"|default:"SIN FECHA" }}</span>
+                        <span>
+                            <span class="text-danger">Límite:</span>
+                            {% if task.due_date %}
+                                {{ task.due_date|date:"d M, H:i" }}
+                            {% else %}
+                                <span class="text-muted">SIN FECHA</span>
+                            {% endif %}
+                        </span>
                     </div>
 
                     <div class="d-flex gap-2">
@@ -242,9 +261,9 @@
             {% endfor %}
         </div>
 
-        <div class="p-2 mt-auto">
+        <div class="p-2 mt-auto text-center">
             {% if user_role != "viewer" %}
-            <button class="btn btn-sm w-100 text-start open-task-modal border-dashed py-2 fw-bold text-primary bg-white" 
+            <button class="btn btn-sm open-task-modal border-dashed py-1 px-3 fw-bold text-primary bg-white" 
                     data-bs-toggle="modal" data-bs-target="#taskModal" data-listid="{{ list.id }}">
                 <i class="bi bi-plus-circle-fill me-2"></i>Añadir tarea
             </button>
@@ -256,7 +275,9 @@
 
 <div class="section-box mt-4 mb-4">
     <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">Miembros</h6>
+        <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
+            <i class="bi bi-people"></i>Miembros
+        </h6>
         {% if user_role == "owner" %}
         <form class="d-flex gap-2 member-form" method="post" action="{% url 'boards:add_member' board.id %}">
             {% csrf_token %}

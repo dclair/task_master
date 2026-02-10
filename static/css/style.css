@@ -7,7 +7,7 @@ body { font-family: 'Inter', sans-serif; background-color: #f1f2f4; margin: 0; }
 
 /* 3. COLUMNAS */
 .kanban-column {
-    width: 310px; min-width: 310px; background-color: #ebedf0; border-radius: 40px !important; 
+    width: 310px; min-width: 310px; background-color: #f3f4f6; border-radius: 40px !important; 
     padding: 0 !important; display: flex; flex-direction: column; max-height: 85vh;
     border: 1px solid #dcdfe4; box-shadow: 0 8px 20px rgba(0,0,0,0.06); overflow: hidden !important; 
 }
@@ -16,11 +16,22 @@ body { font-family: 'Inter', sans-serif; background-color: #f1f2f4; margin: 0; }
 
 /* 4. TARJETAS */
 .task-card {
-    background: #ffffff !important; border-radius: 6px !important; margin-bottom: 18px !important; 
+    background: #ffffff !important; border-radius: 0 !important; margin-bottom: 18px !important; 
     border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(15,23,42,0.06); transition: all 0.25s ease;
     overflow: hidden; position: relative; cursor: default;
 }
-.task-card:hover { transform: translateY(-2px); box-shadow: 0 8px 14px rgba(15,23,42,0.12); }
+.kanban-column .task-card,
+.kanban-column .task-card-header,
+.kanban-column .task-card-body,
+.kanban-column .task-card::before {
+    border-radius: 0 !important;
+}
+.task-card:hover {
+    transform: none;
+    box-shadow: 0 6px 16px rgba(15,23,42,0.12);
+    border-color: #d9e2ec;
+    background: #f1f5f9 !important;
+}
 .task-card:active { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(15,23,42,0.10); }
 
 /* Cursores */
@@ -35,6 +46,7 @@ body { font-family: 'Inter', sans-serif; background-color: #f1f2f4; margin: 0; }
 
 .task-card-header { background-color: #f8fafc; padding: 12px 14px 10px 24px; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 5; }
 .task-card-body { padding: 14px 16px 18px 24px; position: relative; z-index: 5; }
+.open-task-modal { border-radius: 999px !important; }
 
 /* 5. VISTA MÓVIL */
 @media (max-width: 768px) {
@@ -42,10 +54,10 @@ body { font-family: 'Inter', sans-serif; background-color: #f1f2f4; margin: 0; }
     .kanban-column { width: 100%; min-width: 0; border-radius: 18px !important; }
     .kanban-column-header { padding: 18px 16px 12px 16px; }
     .tasks-container { max-height: none; padding: 0 12px 12px 12px; }
-    .task-card { margin-bottom: 12px !important; border-radius: 8px !important; }
+    .task-card { margin-bottom: 12px !important; border-radius: 0 !important; }
     .task-card-header { padding: 10px 12px 8px 18px; }
     .task-card-body { padding: 12px 14px 14px 18px; }
-    .open-task-modal { border-radius: 14px !important; }
+    .open-task-modal { border-radius: 999px !important; }
     .task-grip { opacity: 0.8; }
     .task-title::after {
         content: '  arrastra';
@@ -92,13 +104,10 @@ body { font-family: 'Inter', sans-serif; background-color: #f1f2f4; margin: 0; }
     align-items: center;
     gap: 8px;
 }
-.section-title::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: #2563eb;
-    opacity: 0.7;
+.section-title::before,
+.section-title:before {
+    content: "" !important;
+    display: none !important;
 }
 .invite-form {
     background: #f8fafc;
