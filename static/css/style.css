@@ -33,6 +33,13 @@ textarea {
     border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(15,23,42,0.06); transition: all 0.25s ease;
     overflow: hidden; position: relative; cursor: default;
 }
+.filter-hidden,
+.page-hidden {
+    display: none !important;
+}
+.task-pagination .btn {
+    line-height: 1;
+}
 .kanban-column .task-card,
 .kanban-column .task-card-header,
 .kanban-column .task-card-body,

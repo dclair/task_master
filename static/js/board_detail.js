@@ -32,6 +32,34 @@ document.addEventListener('DOMContentLoaded', function() {
     let activePriority = null;
     let activeStatus = null;
     let searchTerm = '';
+    const TASKS_PAGE_SIZE = 10;
+
+    const updatePagination = (column) => {
+        if (!column) return;
+        const allCards = Array.from(column.querySelectorAll('.task-card'));
+        const filteredCards = allCards.filter(card => !card.classList.contains('filter-hidden'));
+        const totalPages = Math.max(1, Math.ceil(filteredCards.length / TASKS_PAGE_SIZE));
+        let page = parseInt(column.getAttribute('data-page') || '1', 10);
+        if (page > totalPages) page = totalPages;
+        if (page < 1) page = 1;
+        column.setAttribute('data-page', page);
+
+        filteredCards.forEach((card, idx) => {
+            const pageIndex = Math.floor(idx / TASKS_PAGE_SIZE) + 1;
+            card.classList.toggle('page-hidden', pageIndex !== page);
+        });
+
+        const pagination = column.querySelector('.task-pagination');
+        if (pagination) {
+            const prevBtn = pagination.querySelector('.task-page-prev');
+            const nextBtn = pagination.querySelector('.task-page-next');
+            const info = pagination.querySelector('.task-page-info');
+            pagination.classList.toggle('d-none', filteredCards.length <= TASKS_PAGE_SIZE);
+            if (info) info.textContent = `${page}/${totalPages}`;
+            if (prevBtn) prevBtn.disabled = page <= 1;
+            if (nextBtn) nextBtn.disabled = page >= totalPages;
+        }
+    };
 
     const applyFilters = () => {
         const columns = document.querySelectorAll('.kanban-column');
@@ -50,8 +78,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const matchesSearch = !searchTerm || text.includes(searchTerm);
                 const matchesPriority = !activePriority || prio.includes(activePriority);
-                card.classList.toggle('d-none', !(matchesSearch && matchesPriority));
+                card.classList.toggle('filter-hidden', !(matchesSearch && matchesPriority));
             });
+            column.setAttribute('data-page', '1');
+            updatePagination(column);
         });
     };
 
@@ -117,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
             onEnd: function (evt) {
                 updateProgressBar();
                 updatePrioritySummary();
+                applyFilters();
                 const taskId = evt.item.getAttribute('data-taskid');
                 const column = evt.to.closest('.kanban-column');
                 const newListId = column.querySelector('.open-task-modal').getAttribute('data-listid');
@@ -127,6 +158,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
+    });
+
+    document.querySelectorAll('.task-pagination').forEach(pagination => {
+        const column = pagination.closest('.kanban-column');
+        const prevBtn = pagination.querySelector('.task-page-prev');
+        const nextBtn = pagination.querySelector('.task-page-next');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                const current = parseInt(column.getAttribute('data-page') || '1', 10);
+                column.setAttribute('data-page', String(current - 1));
+                updatePagination(column);
+            });
+        }
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                const current = parseInt(column.getAttribute('data-page') || '1', 10);
+                column.setAttribute('data-page', String(current + 1));
+                updatePagination(column);
+            });
+        }
     });
 
     const searchInput = document.getElementById('taskSearch');
@@ -160,17 +211,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.status-filter').forEach(badge => {
         const activate = () => {
             const status = badge.getAttribute('data-status');
-            if (!status) {
-                activeStatus = null;
-            } else {
-                activeStatus = (activeStatus === status) ? null : status;
-            }
+            activeStatus = (activeStatus === status) ? null : status;
             document.querySelectorAll('.status-filter').forEach(b => {
-                const isAll = !activeStatus && !b.getAttribute('data-status');
                 const isActive = activeStatus && b.getAttribute('data-status') === activeStatus;
-                const shouldBeActive = !!isActive || !!isAll;
-                b.classList.toggle('active', shouldBeActive);
-                b.setAttribute('aria-pressed', shouldBeActive ? 'true' : 'false');
+                b.classList.toggle('active', !!isActive);
+                b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
             applyFilters();
         };

@@ -110,6 +110,25 @@
             <span class="text-muted small">Sin actividad reciente.</span>
             {% endfor %}
         </div>
+        {% if activity_page_obj and activity_page_obj.paginator.num_pages > 1 %}
+        <div class="d-flex justify-content-center align-items-center gap-2 mt-3">
+            {% if activity_page_obj.has_previous %}
+            <a class="btn btn-xs btn-outline-secondary rounded-pill px-3"
+               href="?{% if request.GET.tag %}tag={{ request.GET.tag }}&{% endif %}{% if activity_filter %}activity={{ activity_filter }}&{% endif %}activity_page={{ activity_page_obj.previous_page_number }}">
+                Anterior
+            </a>
+            {% endif %}
+            <span class="text-muted extra-small fw-bold">
+                {{ activity_page_obj.number }} / {{ activity_page_obj.paginator.num_pages }}
+            </span>
+            {% if activity_page_obj.has_next %}
+            <a class="btn btn-xs btn-outline-secondary rounded-pill px-3"
+               href="?{% if request.GET.tag %}tag={{ request.GET.tag }}&{% endif %}{% if activity_filter %}activity={{ activity_filter }}&{% endif %}activity_page={{ activity_page_obj.next_page_number }}">
+                Siguiente
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
      
     <div class="section-box mb-4">
@@ -141,9 +160,6 @@
         <div class="text-muted extra-small fw-bold text-uppercase me-2">
             <i class="bi bi-layers me-1"></i>Estado
         </div>
-        <span class="badge rounded-pill text-bg-secondary extra-small status-filter" role="button" tabindex="0" data-status="">
-            Todos
-        </span>
         <span class="badge rounded-pill text-bg-info extra-small status-filter" role="button" tabindex="0" data-status="todo">
             Por hacer
         </span>
@@ -183,6 +199,7 @@
     {% for list in board_lists %}
     <div class="kanban-column shadow-sm"
          data-status="{% if 'por hacer' in list.title|lower or 'pendiente' in list.title|lower %}todo{% elif 'proceso' in list.title|lower or 'curso' in list.title|lower %}doing{% elif 'hecho' in list.title|lower or 'termin' in list.title|lower or 'complet' in list.title|lower or 'finaliz' in list.title|lower %}done{% else %}other{% endif %}"
+         data-page="1"
          {% if 'hecho' in list.title|lower or 'termin' in list.title|lower or 'complet' in list.title|lower or 'finaliz' in list.title|lower %}data-is-done="true"{% endif %}>
         
         <div class="kanban-column-header">
@@ -275,6 +292,12 @@
                 </div>
             </div>
             {% endfor %}
+        </div>
+
+        <div class="task-pagination d-flex justify-content-center align-items-center gap-2 px-2 pb-2">
+            <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-2 task-page-prev">Anterior</button>
+            <span class="extra-small text-muted task-page-info">1/1</span>
+            <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-2 task-page-next">Siguiente</button>
         </div>
 
         <div class="p-2 mt-auto text-center">

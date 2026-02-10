@@ -109,6 +109,10 @@ class Task(models.Model):
         max_length=10, choices=PRIORITY_CHOICES, default="medium"
     )
     due_date = models.DateTimeField(null=True, blank=True)
+    due_soon_notified_at = models.DateTimeField(null=True, blank=True)
+    overdue_notified_at = models.DateTimeField(null=True, blank=True)
+    due_soon_notified_at = models.DateTimeField(null=True, blank=True)
+    overdue_notified_at = models.DateTimeField(null=True, blank=True)
     position = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(Tag, blank=True, related_name="tasks")
@@ -125,6 +129,10 @@ class UserProfile(models.Model):
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     notify_task_assigned = models.BooleanField(default=True)
+    notify_task_due = models.BooleanField(default=True)
+    notify_task_status = models.BooleanField(default=True)
+    notify_task_due = models.BooleanField(default=True)
+    notify_task_status = models.BooleanField(default=True)
 
     def avatar_url(self):
         if self.avatar:

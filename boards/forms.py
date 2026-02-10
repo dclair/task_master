@@ -67,7 +67,13 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = UserProfile
-        fields = ("bio", "avatar", "notify_task_assigned")
+        fields = (
+            "bio",
+            "avatar",
+            "notify_task_assigned",
+            "notify_task_due",
+            "notify_task_status",
+        )
         widgets = {
             "bio": forms.Textarea(
                 attrs={"class": "form-control rounded-4", "rows": 3}
@@ -114,6 +120,38 @@ class UserUpdateForm(forms.ModelForm):
 
 
 class CustomPasswordResetForm(PasswordResetForm):
+    username = forms.CharField(
+        label="Nombre de usuario",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control rounded-pill"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].required = True
+        self.fields["username"].required = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get("email", "").strip()
+        username = cleaned_data.get("username", "").strip()
+        if email and username:
+            exists = User._default_manager.filter(
+                email__iexact=email, username__iexact=username, is_active=True
+            ).exists()
+            if not exists:
+                raise forms.ValidationError(
+                    "Revisa tu nombre de usuario y email, no coinciden. "
+                    "Si necesitas ayuda escribe a soporte@taskmaster.com."
+                )
+        return cleaned_data
+
+    def get_users(self, email):
+        username = self.cleaned_data.get("username", "").strip()
+        return User._default_manager.filter(
+            email__iexact=email, username__iexact=username, is_active=True
+        )
+
     def send_mail(
         self,
         subject_template_name,

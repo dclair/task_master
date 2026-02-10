@@ -71,6 +71,18 @@
                             Recibir emails cuando me asignen tareas
                         </label>
                     </div>
+                    <div class="form-check mb-3">
+                        {{ profile_form.notify_task_due }}
+                        <label class="form-check-label small text-muted" for="{{ profile_form.notify_task_due.id_for_label }}">
+                            Recibir emails cuando una tarea esté por vencer o vencida
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        {{ profile_form.notify_task_status }}
+                        <label class="form-check-label small text-muted" for="{{ profile_form.notify_task_status.id_for_label }}">
+                            Recibir emails cuando cambie el estado de una tarea
+                        </label>
+                    </div>
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary rounded-pill px-4">Guardar</button>

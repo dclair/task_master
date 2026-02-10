@@ -7,6 +7,7 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+from django.core.paginator import Paginator
 from django.db.models import Count, Q, Prefetch
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -42,6 +43,7 @@ from email.mime.image import MIMEImage
 from django.templatetags.static import static
 from django.core import signing
 from django.utils import timezone
+from .utils import get_list_status_key, get_list_status_label, build_board_url
 
 logger = logging.getLogger(__name__)
 
@@ -141,9 +143,7 @@ def send_invite_email(request, invite):
 
 def send_task_assigned_email(request, task, user):
     board = task.task_list.board
-    board_url = request.build_absolute_uri(
-        reverse("boards:board_detail", args=[board.id])
-    )
+    board_url = build_board_url(board.id, request=request)
     context = {
         "user": user,
         "task": task,
@@ -153,6 +153,72 @@ def send_task_assigned_email(request, task, user):
     subject = f"Task Master | Nueva tarea asignada: {task.title}"
     html_body = render_to_string("registration/task_assigned_email.html", context)
     text_body = f"Tienes una nueva tarea en {board.title}: {task.title}. {board_url}"
+    send_html_email(
+        subject=subject,
+        text_body=text_body,
+        html_body=html_body,
+        to_emails=[user.email],
+    )
+
+
+def send_task_due_soon_email(task, user, board_url):
+    board = task.task_list.board
+    context = {
+        "user": user,
+        "task": task,
+        "board": board,
+        "board_url": board_url,
+    }
+    subject = f"Task Master | Tarea por vencer: {task.title}"
+    html_body = render_to_string("registration/task_due_soon_email.html", context)
+    text_body = (
+        f"La tarea '{task.title}' vence pronto en {board.title}. {board_url}"
+    )
+    send_html_email(
+        subject=subject,
+        text_body=text_body,
+        html_body=html_body,
+        to_emails=[user.email],
+    )
+
+
+def send_task_overdue_email(task, user, board_url):
+    board = task.task_list.board
+    context = {
+        "user": user,
+        "task": task,
+        "board": board,
+        "board_url": board_url,
+    }
+    subject = f"Task Master | Tarea vencida: {task.title}"
+    html_body = render_to_string("registration/task_overdue_email.html", context)
+    text_body = f"La tarea '{task.title}' está vencida en {board.title}. {board_url}"
+    send_html_email(
+        subject=subject,
+        text_body=text_body,
+        html_body=html_body,
+        to_emails=[user.email],
+    )
+
+
+def send_task_status_changed_email(task, user, board_url, from_status, to_status):
+    board = task.task_list.board
+    context = {
+        "user": user,
+        "task": task,
+        "board": board,
+        "board_url": board_url,
+        "from_status": from_status,
+        "to_status": to_status,
+    }
+    subject = f"Task Master | Cambio de estado: {task.title}"
+    html_body = render_to_string(
+        "registration/task_status_changed_email.html", context
+    )
+    text_body = (
+        f"'{task.title}' cambió de {from_status} a {to_status} en {board.title}. "
+        f"{board_url}"
+    )
     send_html_email(
         subject=subject,
         text_body=text_body,
@@ -430,7 +496,11 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
         activities_qs = board.activities.select_related("user")
         if activity_filter:
             activities_qs = activities_qs.filter(action=activity_filter)
-        context["activities"] = activities_qs[:20]
+        activity_page = self.request.GET.get("activity_page", 1)
+        activity_paginator = Paginator(activities_qs, 10)
+        activity_page_obj = activity_paginator.get_page(activity_page)
+        context["activities"] = activity_page_obj
+        context["activity_page_obj"] = activity_page_obj
         context["activity_filter"] = activity_filter
         context["activity_actions"] = (
             board.activities.values_list("action", flat=True).distinct()
@@ -558,6 +628,8 @@ def move_task(request):
             raise PermissionDenied
 
         from_list = task.task_list.title
+        from_status_key = get_list_status_key(from_list)
+        to_status_key = get_list_status_key(new_list.title)
         task.task_list = new_list
         task.save()
         _log_activity(
@@ -566,6 +638,26 @@ def move_task(request):
             "Tarea movida",
             f"{task.title} ({from_list} → {new_list.title})",
         )
+        if from_status_key != to_status_key:
+            board_url = build_board_url(new_list.board.id, request=request)
+            from_status = get_list_status_label(from_list)
+            to_status = get_list_status_label(new_list.title)
+            recipients = {u.id: u for u in task.assigned_to.exclude(email="")}
+            if task.created_by and task.created_by.email:
+                recipients[task.created_by.id] = task.created_by
+            for user in recipients.values():
+                try:
+                    profile, _ = UserProfile.objects.get_or_create(user=user)
+                    if profile.notify_task_status:
+                        send_task_status_changed_email(
+                            task,
+                            user,
+                            board_url,
+                            from_status,
+                            to_status,
+                        )
+                except Exception:
+                    logger.exception("Fallo al enviar email de cambio de estado")
 
         return JsonResponse({"status": "ok"})
     return JsonResponse({"status": "error"}, status=400)
@@ -576,6 +668,7 @@ def move_task(request):
 @require_POST
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
+    prev_due_date = task.due_date
     prev_assigned = set(task.assigned_to.values_list("id", flat=True))
     membership = BoardMembership.objects.filter(
         board=task.task_list.board, user=request.user
@@ -608,6 +701,9 @@ def edit_task(request, task_id):
     # Manejo de la fecha (puede venir vacía)
     due_date = request.POST.get("due_date")
     task.due_date = due_date if due_date else None
+    if task.due_date != prev_due_date:
+        task.due_soon_notified_at = None
+        task.overdue_notified_at = None
 
     task.save()
 
