@@ -131,6 +131,9 @@ class UserProfile(models.Model):
     notify_task_assigned = models.BooleanField(default=True)
     notify_task_due = models.BooleanField(default=True)
     notify_task_status = models.BooleanField(default=True)
+    pending_email = models.EmailField(blank=True, null=True)
+    pending_email_token = models.CharField(max_length=255, blank=True, null=True)
+    pending_email_created_at = models.DateTimeField(blank=True, null=True)
     notify_task_due = models.BooleanField(default=True)
     notify_task_status = models.BooleanField(default=True)
 

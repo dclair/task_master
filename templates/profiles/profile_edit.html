@@ -64,6 +64,12 @@
                         <div class="text-danger small mt-1">{{ profile_form.avatar.errors.0 }}</div>
                         {% endif %}
                     </div>
+                    {% if profile_form.instance.pending_email %}
+                    <div class="alert alert-info py-2 small mb-3">
+                        Tienes un cambio de email pendiente: <strong>{{ profile_form.instance.pending_email }}</strong>.
+                        Revisa tu bandeja de entrada para confirmarlo.
+                    </div>
+                    {% endif %}
 
                     <div class="form-check mb-3">
                         {{ profile_form.notify_task_assigned }}

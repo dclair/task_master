@@ -12,12 +12,16 @@ Gestor de tareas estilo Trello con tableros, listas, tareas movibles, etiquetas,
 - Asignación de tareas a múltiples usuarios (solo miembros del tablero).
 - Progreso general del tablero.
 - Búsqueda y filtros por tags y prioridad.
+- Filtro por estado (por hacer / en proceso / completadas).
+- Paginación por lista (10 tareas por página).
 - Exportación de tareas a CSV y JSON (owner/editor).
-- Auditoría de actividad (creación, edición, movimientos, membresías, invitaciones).
+- Auditoría de actividad (creación, edición, movimientos, membresías, invitaciones) con paginación.
 - Gestión de miembros y roles (owner/editor/viewer).
 - Invitaciones por email con aceptación y caducidad.
 - Perfil de usuario con avatar, bio y preferencias de notificaciones.
 - Notificaciones por email cuando te asignan una tarea (opt‑in por perfil).
+- Notificaciones por email de vencimiento (próximas y vencidas) y cambio de estado.
+- Cambio de email con verificación por enlace.
 
 ## Roles
 
@@ -32,6 +36,9 @@ Plantillas HTML con logo embebido:
 - Confirmación de activación
 - Invitaciones
 - Asignación de tareas
+- Vencimiento de tareas (próximas y vencidas)
+- Cambio de estado
+- Confirmación de cambio de email
 - Reset de contraseña
 
 ## Tecnologías
@@ -95,7 +102,18 @@ flowchart TD
 ```ini
 EMAIL_USER=tu_correo@gmail.com
 EMAIL_PASS=tu_app_password
+SITE_URL=https://tudominio.com
 ```
+
+## Notificaciones por vencimiento
+
+Se envían con un comando programable:
+
+```bash
+python manage.py send_task_due_notifications
+```
+
+Recomendado: ejecutar cada hora con cron.
 
 ## Despliegue (producción)
 

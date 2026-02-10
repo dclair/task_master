@@ -227,6 +227,26 @@ def send_task_status_changed_email(task, user, board_url, from_status, to_status
     )
 
 
+def send_email_change_verification(request, user, new_email, token):
+    confirm_url = request.build_absolute_uri(
+        reverse("boards:email_change_confirm", args=[token])
+    )
+    context = {
+        "user": user,
+        "new_email": new_email,
+        "confirm_url": confirm_url,
+    }
+    subject = "Task Master | Confirma tu nuevo email"
+    html_body = render_to_string("registration/email_change_email.html", context)
+    text_body = f"Confirma tu nuevo email: {confirm_url}"
+    send_html_email(
+        subject=subject,
+        text_body=text_body,
+        html_body=html_body,
+        to_emails=[new_email],
+    )
+
+
 def send_html_email(subject, text_body, html_body, to_emails):
     email = EmailMultiAlternatives(
         subject,
@@ -361,6 +381,48 @@ def activate_account(request, uidb64, token):
     return redirect("login")
 
 
+def confirm_email_change(request, token):
+    try:
+        data = signing.loads(token, salt="email-change", max_age=60 * 60 * 24)
+        user_id = data.get("user_id")
+        new_email = data.get("new_email")
+    except signing.SignatureExpired:
+        messages.error(request, "El enlace de cambio de email ha caducado.")
+        return redirect("boards:profile")
+    except signing.BadSignature:
+        messages.error(request, "El enlace de cambio de email es inválido.")
+        return redirect("boards:profile")
+
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        messages.error(request, "No se encontró el usuario.")
+        return redirect("boards:profile")
+
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    if (
+        not profile.pending_email
+        or profile.pending_email != new_email
+        or profile.pending_email_token != token
+    ):
+        messages.error(request, "No hay un cambio de email pendiente para confirmar.")
+        return redirect("boards:profile")
+
+    user.email = new_email
+    user.save(update_fields=["email"])
+    profile.pending_email = None
+    profile.pending_email_token = None
+    profile.pending_email_created_at = None
+    profile.save(
+        update_fields=[
+            "pending_email",
+            "pending_email_token",
+            "pending_email_created_at",
+        ]
+    )
+    messages.success(request, "Email actualizado correctamente.")
+    return redirect("boards:profile")
+
+
 class ProfileView(LoginRequiredMixin, DetailView):
     model = UserProfile
     template_name = "profiles/profile_detail.html"
@@ -389,9 +451,45 @@ class ProfileUpdateView(LoginRequiredMixin, FormView):
         profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
 
         if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
+            new_email = user_form.cleaned_data["email"].strip().lower()
+            email_changed = new_email != request.user.email.strip().lower()
+
+            user_instance = user_form.save(commit=False)
+            if email_changed:
+                user_instance.email = request.user.email
+            user_instance.save()
+
             profile_form.save()
-            messages.success(request, "Perfil actualizado correctamente.")
+
+            if email_changed:
+                token = signing.dumps(
+                    {"user_id": request.user.id, "new_email": new_email},
+                    salt="email-change",
+                )
+                profile.pending_email = new_email
+                profile.pending_email_token = token
+                profile.pending_email_created_at = timezone.now()
+                profile.save(
+                    update_fields=[
+                        "pending_email",
+                        "pending_email_token",
+                        "pending_email_created_at",
+                    ]
+                )
+                try:
+                    send_email_change_verification(request, request.user, new_email, token)
+                    messages.info(
+                        request,
+                        "Te enviamos un enlace para confirmar tu nuevo email.",
+                    )
+                except Exception:
+                    logger.exception("Fallo al enviar verificación de cambio de email")
+                    messages.error(
+                        request,
+                        "No se pudo enviar el email de verificación. Inténtalo más tarde.",
+                    )
+            else:
+                messages.success(request, "Perfil actualizado correctamente.")
             return redirect(self.success_url)
 
         return self.render_to_response(
