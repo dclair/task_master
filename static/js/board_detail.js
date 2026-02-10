@@ -30,19 +30,28 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     let activePriority = null;
+    let activeStatus = null;
     let searchTerm = '';
 
     const applyFilters = () => {
-        const cards = document.querySelectorAll('.task-card');
-        cards.forEach(card => {
-            const title = card.getAttribute('data-title') || '';
-            const desc = card.getAttribute('data-desc') || '';
-            const text = (title + desc).toLowerCase();
-            const prio = (card.getAttribute('data-prio') || '').toLowerCase();
+        const columns = document.querySelectorAll('.kanban-column');
+        columns.forEach(column => {
+            const status = column.getAttribute('data-status') || 'other';
+            const matchesStatus = !activeStatus || status === activeStatus;
+            column.classList.toggle('d-none', !matchesStatus);
+            if (!matchesStatus) return;
 
-            const matchesSearch = !searchTerm || text.includes(searchTerm);
-            const matchesPriority = !activePriority || prio.includes(activePriority);
-            card.style.display = (matchesSearch && matchesPriority) ? 'block' : 'none';
+            const cards = column.querySelectorAll('.task-card');
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title') || '';
+                const desc = card.getAttribute('data-desc') || '';
+                const text = (title + desc).toLowerCase();
+                const prio = (card.getAttribute('data-prio') || '').toLowerCase();
+
+                const matchesSearch = !searchTerm || text.includes(searchTerm);
+                const matchesPriority = !activePriority || prio.includes(activePriority);
+                card.classList.toggle('d-none', !(matchesSearch && matchesPriority));
+            });
         });
     };
 
@@ -136,6 +145,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 const isActive = activePriority && b.getAttribute('data-priority') === activePriority;
                 b.classList.toggle('active', !!isActive);
                 b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+            applyFilters();
+        };
+        badge.addEventListener('click', activate);
+        badge.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                activate();
+            }
+        });
+    });
+
+    document.querySelectorAll('.status-filter').forEach(badge => {
+        const activate = () => {
+            const status = badge.getAttribute('data-status');
+            if (!status) {
+                activeStatus = null;
+            } else {
+                activeStatus = (activeStatus === status) ? null : status;
+            }
+            document.querySelectorAll('.status-filter').forEach(b => {
+                const isAll = !activeStatus && !b.getAttribute('data-status');
+                const isActive = activeStatus && b.getAttribute('data-status') === activeStatus;
+                const shouldBeActive = !!isActive || !!isAll;
+                b.classList.toggle('active', shouldBeActive);
+                b.setAttribute('aria-pressed', shouldBeActive ? 'true' : 'false');
             });
             applyFilters();
         };
