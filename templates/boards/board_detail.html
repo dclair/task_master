@@ -119,9 +119,9 @@
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
         <div class="d-flex flex-wrap gap-2 align-items-center">
             {% for tag in board_tags %}
-            <a href="?tag={{ tag.id }}" class="badge rounded-pill border text-decoration-none text-dark d-flex align-items-center px-3 py-2 shadow-sm" style="background-color: {{ tag.color }}; font-size: 0.65rem;">
+            <a href="?tag={{ tag.id }}" class="badge rounded-pill border text-decoration-none text-dark d-flex align-items-center px-2 py-1 shadow-sm tag-filter" style="background-color: {{ tag.color }};">
                 <span class="fw-bold me-2">{{ tag.name|upper }}</span>
-                <span class="bg-white bg-opacity-50 rounded-circle d-flex align-items-center justify-content-center" style="width: 18px; height: 18px;">{{ tag.num_tasks }}</span>
+                <span class="bg-white bg-opacity-50 rounded-circle d-flex align-items-center justify-content-center tag-filter-count">{{ tag.num_tasks }}</span>
             </a>
             {% endfor %}
             

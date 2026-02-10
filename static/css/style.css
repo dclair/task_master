@@ -1,5 +1,18 @@
 /* 1. CONFIGURACIÓN GENERAL */
-body { font-family: 'Inter', sans-serif; background-color: #f1f2f4; margin: 0; }
+body { font-family: 'Overpass', sans-serif; background-color: #f1f2f4; margin: 0; }
+h1, h2, h3, h4, h5, h6,
+.section-title,
+.column-title,
+.navbar-brand {
+    font-family: 'Vercetti', serif;
+}
+button,
+.btn,
+input,
+select,
+textarea {
+    font-family: 'Overpass', sans-serif;
+}
 .extra-small { font-size: 0.7rem; }
 
 /* 2. TABLERO KANBAN */
@@ -36,6 +49,7 @@ body { font-family: 'Inter', sans-serif; background-color: #f1f2f4; margin: 0; }
 
 /* Cursores */
 .task-title, .btn-edit-task, .btn-delete-task { cursor: pointer !important; }
+.task-title { font-family: 'Vercetti', serif; }
 .task-grip { cursor: grab !important; }
 .task-grip:active, .task-card:active { cursor: grabbing !important; }
 
@@ -85,6 +99,16 @@ body { font-family: 'Inter', sans-serif; background-color: #f1f2f4; margin: 0; }
 .priority-summary .badge.status-filter.active {
     outline: 2px solid rgba(15,23,42,0.35);
     outline-offset: 2px;
+}
+.tag-filter {
+    font-size: 0.6rem;
+    padding: 0.25rem 0.5rem;
+    letter-spacing: 0.02em;
+}
+.tag-filter-count {
+    width: 16px;
+    height: 16px;
+    font-size: 0.55rem;
 }
 .task-meta { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.01em; }
 .password-help ul { margin: 6px 0 0 16px; padding: 0; }
