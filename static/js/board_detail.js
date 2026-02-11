@@ -1,8 +1,11 @@
+// Inicializa comportamiento interactivo del detalle de tablero (Kanban).
 document.addEventListener('DOMContentLoaded', function() {
+    // Activa tooltips de Bootstrap en botones/acciones con atributo data-bs-toggle.
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
         new bootstrap.Tooltip(el);
     });
 
+    // Helper para mostrar spinner y evitar doble submit en formularios inline.
     const bindSpinner = (form, labelText, hideLabel) => {
         if (!form) return;
         form.addEventListener('submit', () => {
@@ -20,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function() {
     bindSpinner(document.querySelector('.member-form'), 'Guardando...');
     bindSpinner(document.querySelector('.task-form'), 'Guardando...');
     document.querySelectorAll('.role-form').forEach(form => bindSpinner(form, '', true));
+
+    // Recalcula progreso según tareas en columnas marcadas como "done".
     const updateProgressBar = () => {
         const total = document.querySelectorAll('.task-card').length;
         const done = document.querySelectorAll('.kanban-column[data-is-done="true"] .task-card').length;
@@ -35,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let searchTerm = '';
     const TASKS_PAGE_SIZE = 10;
 
+    // Paginación cliente por columna para no renderizar listas largas de una vez.
     const updatePagination = (column) => {
         if (!column) return;
         const allCards = Array.from(column.querySelectorAll('.task-card'));
@@ -62,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // Filtros combinados por estado de columna, prioridad y texto de búsqueda.
     const applyFilters = () => {
         const columns = document.querySelectorAll('.kanban-column');
         columns.forEach(column => {
@@ -87,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateStatusSummary();
     };
 
+    // Resumen de prioridades (alta/media/baja) mostrado en la barra superior.
     const updatePrioritySummary = () => {
         const cards = document.querySelectorAll('.task-card');
         let high = 0, medium = 0, low = 0;
@@ -104,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (lowEl) lowEl.textContent = low;
     };
 
+    // Resumen de estados visibles (todo/doing/done) según filtros activos.
     const updateStatusSummary = () => {
         const columns = document.querySelectorAll('.kanban-column');
         let todo = 0, doing = 0, done = 0;
@@ -127,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateStatusSummary();
     applyFilters();
 
+    // Configura modal para crear o editar tarea según botón que lo abre.
     const taskModal = document.getElementById('taskModal');
     if (taskModal) {
         taskModal.addEventListener('show.bs.modal', function (event) {
@@ -161,6 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Habilita drag & drop entre columnas y sincroniza movimiento por API.
     const containers = document.querySelectorAll('.tasks-container');
     containers.forEach(container => {
         new Sortable(container, {
@@ -172,6 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const taskId = evt.item.getAttribute('data-taskid');
                 const column = evt.to.closest('.kanban-column');
                 const newListId = column.querySelector('.open-task-modal').getAttribute('data-listid');
+                // Movimiento persistido en backend; la UI ya refleja el cambio local.
                 fetch('/boards/task/move/', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
@@ -181,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Controles de paginación por columna.
     document.querySelectorAll('.task-pagination').forEach(pagination => {
         const column = pagination.closest('.kanban-column');
         const prevBtn = pagination.querySelector('.task-page-prev');
@@ -201,6 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Búsqueda instantánea por título + descripción.
     const searchInput = document.getElementById('taskSearch');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -209,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Filtro por prioridad (con soporte teclado para accesibilidad).
     document.querySelectorAll('.priority-filter').forEach(badge => {
         const activate = () => {
             const prio = badge.getAttribute('data-priority');
@@ -230,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Filtro por estado de columna (con soporte teclado para accesibilidad).
     document.querySelectorAll('.status-filter').forEach(badge => {
         const activate = () => {
             const status = badge.getAttribute('data-status');
@@ -251,6 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Redimensiona panel de actividad mediante arrastre (desktop y touch).
     const resizer = document.querySelector('.board-resizer');
     const boardLayout = document.querySelector('.board-layout');
     if (resizer && boardLayout) {
@@ -290,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Helper clásico de CSRF para peticiones fetch POST en Django.
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

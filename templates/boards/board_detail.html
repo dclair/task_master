@@ -1,7 +1,9 @@
 {% extends "layout.html" %}
 {% load static %}
+{# Vista principal del tablero Kanban con actividad, filtros, columnas y miembros. #}
 
 {% block content %}
+{# Cabecera del tablero + acción para crear listas (según rol). #}
 <div class="mb-4">
     <div class="d-flex justify-content-between align-items-start mb-2">
         <div>
@@ -16,6 +18,7 @@
     </div>
 
     <div class="section-box mt-3 mb-4">
+        {# Indicador de progreso global calculado en la vista. #}
         <div class="d-flex justify-content-between align-items-end mb-1">
             <span class="section-title extra-small fw-bold text-muted text-uppercase">
                 <i class="bi bi-speedometer2"></i>Progreso del Tablero
@@ -30,6 +33,7 @@
     </div>
 
     {% if user_role == "owner" %}
+    {# Gestión de invitaciones: solo visible para el propietario. #}
     <div class="section-box mb-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
             <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
@@ -74,6 +78,7 @@
 
     <div class="board-layout">
     <div class="board-left">
+    {# Panel de actividad con filtro por tipo y paginación. #}
     <div class="section-box mb-4 activity-panel">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
             <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
@@ -146,6 +151,7 @@
     <div class="board-resizer" aria-hidden="true"></div>
      
     <div class="board-right">
+    {# Bloque de filtros (tags, texto, estado, prioridad) y exportaciones. #}
     <div class="section-box mb-4">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <div class="section-title text-uppercase text-muted extra-small fw-bold mb-0">
@@ -220,6 +226,7 @@
         </div>
     </div>
 
+    {# Columnas Kanban y tarjetas de tareas. #}
     <div class="kanban-wrapper">
     {% for list in board_lists %}
     <div class="kanban-column shadow-sm"
@@ -340,6 +347,7 @@
     </div>
 </div>
 
+    {# Administración de miembros y roles del tablero. #}
     <div class="section-box mt-4 mb-4">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
@@ -395,5 +403,6 @@
     </div>
 </div>
 
+{# Modales desacoplados para crear/editar tareas y listas. #}
 {% include "boards/_modals.html" %}
 {% endblock %}

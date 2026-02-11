@@ -1,4 +1,5 @@
 {% load static %}
+{# Plantilla base: define estructura global (head, header, contenido, footer y scripts). #}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -16,8 +17,10 @@
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
+    {# Navegación superior reutilizable en toda la app. #}
     {% include "includes/_header.html" %}
 
+    {# Contenedor principal + mensajes flash de Django. #}
     <main class="container py-5 flex-grow-1">
         {% if messages %}
         <div class="mb-4">
@@ -32,8 +35,10 @@
         {% block content %}{% endblock %}
     </main>
 
+    {# Pie global reutilizable. #}
     {% include "includes/_footer.html" %}
 
+    {# Scripts globales (Bootstrap, drag & drop y JS propio). #}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="{% static 'js/board_detail.js' %}"></script>

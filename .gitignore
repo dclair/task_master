@@ -1,0 +1,75 @@
+
+# ===============================
+# 🔐 Entornos virtuales
+# ===============================
+.venv/
+venv/
+env/
+ENV/
+
+# ===============================
+# 🔐 Variables de entorno
+# ===============================
+.env
+.env.*
+*.env
+
+# ===============================
+# 🐍 Python
+# ===============================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# ===============================
+# 🌐 Django
+# ===============================
+*.log
+db.sqlite3
+db.sqlite3-journal
+local_settings.py
+
+# ===============================
+# 📦 Archivos estáticos generados
+# ===============================
+staticfiles/
+media/
+
+# ===============================
+# 🧪 Tests / cobertura
+# ===============================
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ===============================
+# 🧰 IDEs / Editores
+# ===============================
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# ===============================
+# 🖥 Sistema operativo
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# 📦 Node (si usas npm para frontend)
+# ===============================
+node_modules/
+dist/
+build/
+npm-debug.log*
+yarn-error.log*
+
+# ===============================
+# 🗂 Archivos temporales
+# ===============================
+*.swp
+*.tmp
+*.bak

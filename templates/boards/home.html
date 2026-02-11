@@ -1,8 +1,10 @@
 {% extends "layout.html" %}
+{# Vista de inicio de tableros: listado de proyectos del usuario. #}
 
 {% block head_title %}Mis Tableros | Task Master{% endblock %}
 
 {% block content %}
+{# Encabezado de la pantalla y CTA para crear tablero. #}
 <div class="d-flex justify-content-between align-items-center mb-5">
     <div>
         <h2 class="fw-800 mb-0">Mis Tableros</h2>
@@ -13,6 +15,7 @@
     </a>
 </div>
 
+{# Grid de tarjetas de tableros existentes. #}
 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
     {% for board in boards %}
     <div class="col">
@@ -40,6 +43,7 @@
         </div>
     </div>
     {% empty %}
+    {# Estado vacío cuando todavía no hay tableros creados. #}
     <div class="col-12 text-center py-5">
         <div class="bg-white p-5 rounded-4 shadow-sm border border-dashed">
             <i class="bi bi-layout-three-columns display-1 text-muted opacity-25"></i>

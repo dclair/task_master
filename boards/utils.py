@@ -2,6 +2,7 @@ from django.conf import settings
 from django.urls import reverse
 
 
+# Normaliza un título de lista a una clave de estado usada por UI y notificaciones.
 def get_list_status_key(title):
     text = (title or "").lower()
     if "por hacer" in text or "pendiente" in text:
@@ -19,6 +20,7 @@ def get_list_status_key(title):
     return "other"
 
 
+# Etiqueta legible para cada estado interno.
 def get_list_status_label(title):
     key = get_list_status_key(title)
     return {
@@ -28,6 +30,7 @@ def get_list_status_label(title):
     }.get(key, title)
 
 
+# Construye URL absoluta/relativa al tablero según exista request o SITE_URL.
 def build_board_url(board_id, request=None):
     path = reverse("boards:board_detail", args=[board_id])
     if request is not None:

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+# Entidad principal del proyecto: tablero Kanban.
 class Board(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -14,6 +15,7 @@ class Board(models.Model):
         return self.title
 
 
+# Relación usuario-tablero con rol de permisos.
 class BoardMembership(models.Model):
     ROLE_CHOICES = [
         ("owner", "Owner"),
@@ -33,6 +35,7 @@ class BoardMembership(models.Model):
         return f"{self.user.username} - {self.board.title} ({self.role})"
 
 
+# Invitaciones pendientes para dar acceso al tablero.
 class BoardInvite(models.Model):
     ROLE_CHOICES = BoardMembership.ROLE_CHOICES
 
@@ -53,6 +56,7 @@ class BoardInvite(models.Model):
         return f"{self.email} - {self.board.title} ({self.role})"
 
 
+# Columnas/listas dentro del tablero (por hacer, en curso, done, etc.).
 class TaskList(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="lists")
     title = models.CharField(max_length=100)
@@ -65,7 +69,7 @@ class TaskList(models.Model):
         return f"{self.title} ({self.board.title})"
 
 
-# Modelo para etiquetas (tags) de tareas
+# Catálogo de etiquetas reutilizables para clasificar tareas.
 class Tag(models.Model):
     # Colores pastel elegantes
     COLOR_CHOICES = [
@@ -83,6 +87,7 @@ class Tag(models.Model):
         return self.name
 
 
+# Tarea individual dentro de una columna del tablero.
 class Task(models.Model):
     PRIORITY_CHOICES = [
         ("low", "Baja"),
@@ -124,6 +129,7 @@ class Task(models.Model):
         return self.title
 
 
+# Preferencias y datos extendidos del usuario.
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     bio = models.TextField(blank=True)
@@ -146,6 +152,7 @@ class UserProfile(models.Model):
         return self.user.username
 
 
+# Registro de eventos para el feed de actividad por tablero.
 class Activity(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="activities")
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)

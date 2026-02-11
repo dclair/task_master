@@ -3,6 +3,7 @@ from . import views
 
 app_name = "boards"
 
+# Rutas de la app boards: auth extendida, tableros, tareas, miembros, invitaciones y exportaciones.
 urlpatterns = [
     path("", views.BoardListView.as_view(), name="board_list"),
     path("activate/<uidb64>/<token>/", views.activate_account, name="activate"),

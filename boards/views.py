@@ -48,6 +48,9 @@ from .utils import get_list_status_key, get_list_status_label, build_board_url
 logger = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------
+# Registro y activación de cuentas
+# ---------------------------------------------------------------------
 # Vista para el Registro de Usuarios
 class SignUpView(CreateView):
     form_class = SignUpForm
@@ -85,6 +88,7 @@ class SignUpView(CreateView):
             return redirect(resend_url)
 
 
+# Envía el email inicial de activación de cuenta.
 def send_activation_email(request, user):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = activation_token_generator.make_token(user)
@@ -107,6 +111,7 @@ def send_activation_email(request, user):
     )
 
 
+# Notifica al usuario que su cuenta quedó activada.
 def send_activation_success_email(request, user):
     login_url = request.build_absolute_uri(reverse("login"))
     context = {"user": user, "login_url": login_url}
@@ -121,6 +126,7 @@ def send_activation_success_email(request, user):
     )
 
 
+# Envía invitación a un tablero por email.
 def send_invite_email(request, invite):
     invite_token = signing.dumps({"invite_id": invite.id})
     invite_url = request.build_absolute_uri(
@@ -141,6 +147,7 @@ def send_invite_email(request, invite):
     )
 
 
+# Notifica asignación de tarea.
 def send_task_assigned_email(request, task, user):
     board = task.task_list.board
     board_url = build_board_url(board.id, request=request)
@@ -161,6 +168,7 @@ def send_task_assigned_email(request, task, user):
     )
 
 
+# Notifica tareas que están por vencer.
 def send_task_due_soon_email(task, user, board_url):
     board = task.task_list.board
     context = {
@@ -182,6 +190,7 @@ def send_task_due_soon_email(task, user, board_url):
     )
 
 
+# Notifica tareas vencidas.
 def send_task_overdue_email(task, user, board_url):
     board = task.task_list.board
     context = {
@@ -201,6 +210,7 @@ def send_task_overdue_email(task, user, board_url):
     )
 
 
+# Notifica cambios de estado cuando una tarea se mueve de columna.
 def send_task_status_changed_email(task, user, board_url, from_status, to_status):
     board = task.task_list.board
     context = {
@@ -227,6 +237,7 @@ def send_task_status_changed_email(task, user, board_url, from_status, to_status
     )
 
 
+# Flujo para verificar un cambio de email del perfil.
 def send_email_change_verification(request, user, new_email, token):
     confirm_url = request.build_absolute_uri(
         reverse("boards:email_change_confirm", args=[token])
@@ -247,6 +258,7 @@ def send_email_change_verification(request, user, new_email, token):
     )
 
 
+# Helper común para enviar emails HTML con logo embebido.
 def send_html_email(subject, text_body, html_body, to_emails):
     email = EmailMultiAlternatives(
         subject,
@@ -269,6 +281,9 @@ def send_html_email(subject, text_body, html_body, to_emails):
     email.send(fail_silently=False)
 
 
+# ---------------------------------------------------------------------
+# Login y recuperación de contraseña
+# ---------------------------------------------------------------------
 class CustomLoginView(LoginView):
     authentication_form = CustomAuthenticationForm
     template_name = "registration/login.html"
@@ -305,6 +320,7 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = "registration/password_reset_complete.html"
 
 
+# Formulario mínimo para reenviar link de activación.
 class ResendActivationForm(forms.Form):
     username = forms.CharField(
         widget=forms.TextInput(attrs={"class": "form-control rounded-pill"})
@@ -351,6 +367,7 @@ class ResendActivationView(FormView):
         return redirect(self.get_success_url())
 
 
+# Valida token de activación, activa usuario y redirige con mensajes.
 def activate_account(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -381,6 +398,7 @@ def activate_account(request, uidb64, token):
     return redirect("login")
 
 
+# Confirma un cambio de email pendiente usando token firmado.
 def confirm_email_change(request, token):
     try:
         data = signing.loads(token, salt="email-change", max_age=60 * 60 * 24)
@@ -423,6 +441,9 @@ def confirm_email_change(request, token):
     return redirect("boards:profile")
 
 
+# ---------------------------------------------------------------------
+# Perfil de usuario
+# ---------------------------------------------------------------------
 class ProfileView(LoginRequiredMixin, DetailView):
     model = UserProfile
     template_name = "profiles/profile_detail.html"
@@ -497,6 +518,9 @@ class ProfileUpdateView(LoginRequiredMixin, FormView):
         )
 
 
+# ---------------------------------------------------------------------
+# Tableros y detalle Kanban
+# ---------------------------------------------------------------------
 # Vista para listar los Tableros del usuario
 class BoardListView(LoginRequiredMixin, ListView):
     model = Board
@@ -617,6 +641,9 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
+# ---------------------------------------------------------------------
+# Operaciones sobre listas y tareas
+# ---------------------------------------------------------------------
 # Vista para añadir una Lista
 def add_list(request, board_id):
     board = get_object_or_404(Board, id=board_id)
@@ -812,6 +839,7 @@ def edit_task(request, task_id):
     return redirect("boards:board_detail", pk=task.task_list.board.id)
 
 
+# Helpers de permisos y auditoría de acciones.
 def _require_owner(board, user):
     membership = BoardMembership.objects.filter(board=board, user=user).first()
     if not membership or membership.role != "owner":
@@ -827,6 +855,9 @@ def _require_member(board, user):
         raise PermissionDenied
 
 
+# ---------------------------------------------------------------------
+# Gestión de miembros del tablero
+# ---------------------------------------------------------------------
 @login_required
 @require_POST
 def add_member(request, board_id):
@@ -883,6 +914,9 @@ def remove_member(request, board_id, membership_id):
     return redirect("boards:board_detail", pk=board_id)
 
 
+# ---------------------------------------------------------------------
+# Exportaciones
+# ---------------------------------------------------------------------
 @login_required
 def export_tasks_csv(request, board_id):
     board = get_object_or_404(Board, id=board_id)
@@ -1011,6 +1045,9 @@ def export_activity_csv(request, board_id):
     return response
 
 
+# ---------------------------------------------------------------------
+# Invitaciones por email y aceptación
+# ---------------------------------------------------------------------
 @login_required
 @require_POST
 def invite_member(request, board_id):

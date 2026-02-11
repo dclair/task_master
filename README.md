@@ -16,6 +16,8 @@ Gestor de tareas estilo Trello con tableros, listas, tareas movibles, etiquetas,
 - Paginación por lista (10 tareas por página).
 - Exportación de tareas a CSV y JSON (owner/editor).
 - Auditoría de actividad (creación, edición, movimientos, membresías, invitaciones) con paginación.
+- Panel lateral de actividad con redimensionado y colapsable en móvil.
+- Filtros colapsables en móvil y contadores por estado.
 - Gestión de miembros y roles (owner/editor/viewer).
 - Invitaciones por email con aceptación y caducidad.
 - Perfil de usuario con avatar, bio y preferencias de notificaciones.
@@ -114,6 +116,12 @@ python manage.py send_task_due_notifications
 ```
 
 Recomendado: ejecutar cada hora con cron.
+
+## Notas de UI
+
+- Panel de actividad ajustable (drag) y colapsable en móvil.
+- Columnas kanban optimizadas para ver más de 3 en pantalla.
+- Botón de "Añadir tarea" compacto y centrado.
 
 ## Despliegue (producción)
 

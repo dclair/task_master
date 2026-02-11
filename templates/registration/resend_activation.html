@@ -1,8 +1,10 @@
 {% extends "layout.html" %}
+{# Reenvío de enlace de activación para cuentas aún inactivas. #}
 
 {% block head_title %}Reenviar Activación | Task Master{% endblock %}
 
 {% block content %}
+{# Formulario simple (usuario + email) para reenviar activación. #}
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
         <div class="card border-0 shadow-sm" style="border-radius: 18px;">
@@ -43,6 +45,7 @@
 
 {% block extra_js %}
 <script>
+// Evita múltiples clics en "Enviar enlace".
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('form');
   const submitBtn = document.getElementById('resend-submit');

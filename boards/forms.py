@@ -11,6 +11,9 @@ from django.contrib.auth.models import User
 from .models import Board, TaskList, Task, UserProfile
 
 
+# ---------------------------------------------------------------------
+# Formularios de tablero y autenticación
+# ---------------------------------------------------------------------
 # Formulario para crear un Tablero
 class BoardForm(forms.ModelForm):
     class Meta:
@@ -51,7 +54,7 @@ class SignUpForm(UserCreationForm):
         }
 
 
-
+# Bloquea login de cuentas sin activar.
 class CustomAuthenticationForm(AuthenticationForm):
     def confirm_login_allowed(self, user):
         if not user.is_active:
@@ -61,6 +64,9 @@ class CustomAuthenticationForm(AuthenticationForm):
             )
 
 
+# ---------------------------------------------------------------------
+# Formularios de perfil
+# ---------------------------------------------------------------------
 class ProfileForm(forms.ModelForm):
     MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
     ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
@@ -95,6 +101,7 @@ class ProfileForm(forms.ModelForm):
         return avatar
 
 
+# Actualiza datos base del usuario (tabla auth_user).
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
@@ -119,6 +126,7 @@ class UserUpdateForm(forms.ModelForm):
         return username
 
 
+# Formulario custom para reset: exige coincidencia usuario + email.
 class CustomPasswordResetForm(PasswordResetForm):
     username = forms.CharField(
         label="Nombre de usuario",
@@ -184,6 +192,9 @@ class CustomPasswordResetForm(PasswordResetForm):
         email.send(fail_silently=False)
 
 
+# ---------------------------------------------------------------------
+# Formularios Kanban: listas y tareas
+# ---------------------------------------------------------------------
 # Formulario para crear una Lista de Tareas
 class TaskListForm(forms.ModelForm):
     class Meta:
