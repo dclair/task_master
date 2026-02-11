@@ -1,0 +1,26 @@
+{# Banner global de consentimiento de cookies. #}
+<div id="cookie-banner" class="cookie-banner d-none" role="dialog" aria-live="polite" aria-label="Preferencias de cookies">
+    <div class="cookie-banner-inner">
+        <p class="cookie-banner-title mb-1">Configuración de cookies</p>
+        <p class="cookie-banner-text mb-2">
+            Usamos cookies para seguridad y funcionamiento. Puedes aceptar todas, mantener solo las imprescindibles
+            o rechazarlas. Al rechazar todas, algunas funciones (inicio de sesión, seguridad CSRF y formularios)
+            pueden no funcionar correctamente.
+        </p>
+        <a href="{% url 'cookies_policy' %}" class="cookie-banner-link">Ver política de cookies</a>
+
+        <div class="cookie-banner-actions mt-3">
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-cookie-choice="all">
+                Aceptar todas
+            </button>
+            <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" data-cookie-choice="essential">
+                Solo imprescindibles
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3" data-cookie-choice="reject">
+                Rechazar todas
+            </button>
+        </div>
+
+        <p id="cookie-banner-note" class="cookie-banner-note mt-2 mb-0 d-none"></p>
+    </div>
+</div>

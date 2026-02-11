@@ -18,6 +18,68 @@ body.user-select-none {
 }
 .extra-small { font-size: 0.7rem; }
 
+/* Footer global coherente con el header */
+.site-footer {
+    background:
+        radial-gradient(circle at 85% 15%, rgba(37, 99, 235, 0.18), transparent 30%),
+        linear-gradient(180deg, #0b0b0b, #111827);
+    color: #e5e7eb;
+    border-top: 1px solid rgba(148, 163, 184, 0.22);
+}
+.site-footer-brand {
+    font-family: 'Vercetti', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+.site-footer-copy {
+    color: #cbd5e1;
+    max-width: 42ch;
+    font-size: 0.92rem;
+}
+.site-footer-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 0.65rem;
+}
+.site-footer-links li + li {
+    margin-top: 0.42rem;
+}
+.site-footer-links a,
+.site-footer-link-btn {
+    color: #e5e7eb;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.18s ease;
+}
+.site-footer-links a:hover,
+.site-footer-link-btn:hover {
+    color: #60a5fa;
+}
+.site-footer-link-btn {
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+}
+.site-footer-card {
+    border: 1px solid rgba(96, 165, 250, 0.35);
+    background: rgba(30, 41, 59, 0.56);
+    border-radius: 14px;
+    padding: 14px;
+}
+.site-footer-bottom {
+    border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+@media (max-width: 576px) {
+    .site-footer-copy {
+        max-width: none;
+    }
+}
+
 /* 2. TABLERO KANBAN */
 .kanban-wrapper { display: flex; overflow-x: auto; padding: 24px; gap: 1.75rem; min-height: calc(100vh - 200px); align-items: flex-start; }
 
@@ -531,5 +593,97 @@ body.user-select-none {
         font-size: 0.68rem;
         left: 10px;
         bottom: 10px;
+    }
+}
+
+/* 8. PÁGINAS LEGALES */
+.legal-page {
+    max-width: 920px;
+}
+.legal-title {
+    font-size: clamp(1.8rem, 2.8vw, 2.35rem);
+    margin-bottom: 0.35rem;
+}
+.legal-updated {
+    color: #64748b;
+    font-size: 0.86rem;
+    margin-bottom: 1rem;
+}
+.legal-card {
+    background: #fff;
+    border: 1px solid #e7edf5;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
+    margin-bottom: 12px;
+}
+.legal-card h2 {
+    font-size: 1.03rem;
+    margin-bottom: 0.45rem;
+    color: #0f172a;
+}
+.legal-card p {
+    margin: 0;
+    color: #334155;
+    line-height: 1.65;
+    font-size: 0.95rem;
+}
+
+/* 9. BANNER DE COOKIES */
+.cookie-banner {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1085;
+}
+.cookie-banner-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    background: rgba(10, 15, 28, 0.96);
+    border: 1px solid rgba(148, 163, 184, 0.32);
+    border-radius: 14px;
+    box-shadow: 0 18px 36px rgba(2, 6, 23, 0.45);
+    color: #e2e8f0;
+    padding: 14px 16px;
+}
+.cookie-banner-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #f8fafc;
+}
+.cookie-banner-text {
+    font-size: 0.84rem;
+    color: #cbd5e1;
+    max-width: 94ch;
+}
+.cookie-banner-link {
+    color: #93c5fd;
+    font-size: 0.83rem;
+    text-decoration: none;
+}
+.cookie-banner-link:hover {
+    color: #bfdbfe;
+}
+.cookie-banner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.cookie-banner-note {
+    font-size: 0.78rem;
+    color: #fda4af;
+}
+@media (max-width: 576px) {
+    .cookie-banner {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+    }
+    .cookie-banner-inner {
+        padding: 12px;
+    }
+    .cookie-banner-actions .btn {
+        width: 100%;
     }
 }

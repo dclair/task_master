@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{# Página estática: política de privacidad y protección de datos. #}
+
+{% block head_title %}Política de Privacidad | Task Master{% endblock %}
+
+{% block content %}
+<section class="legal-page mx-auto">
+    <h1 class="legal-title">Política de privacidad</h1>
+    <p class="legal-updated">Última actualización: {% now "d/m/Y" %}</p>
+
+    <div class="legal-card">
+        <h2>1. Responsable del tratamiento</h2>
+        <p>
+            El responsable del tratamiento de los datos personales es la entidad o persona titular de Task Master.
+            Sustituye este texto con tus datos reales de identificación y contacto.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>2. Datos que se recogen</h2>
+        <p>
+            Podemos tratar datos como nombre de usuario, email, información de perfil, actividad dentro de tableros
+            y preferencias de notificación necesarias para prestar el servicio.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>3. Finalidades del tratamiento</h2>
+        <p>
+            Los datos se tratan para crear y gestionar cuentas, habilitar la colaboración entre usuarios,
+            enviar notificaciones relacionadas con tareas y mantener la seguridad de la plataforma.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>4. Base jurídica</h2>
+        <p>
+            El tratamiento se basa en la ejecución de la relación de servicio, el cumplimiento de obligaciones legales
+            y, cuando corresponda, el consentimiento del usuario.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>5. Conservación de datos</h2>
+        <p>
+            Conservamos los datos durante el tiempo necesario para prestar el servicio y cumplir obligaciones legales.
+            Tras ello, se eliminarán o anonimizarán conforme a la normativa aplicable.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>6. Derechos de las personas usuarias</h2>
+        <p>
+            Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad
+            enviando una solicitud al canal de contacto que definas para soporte y privacidad.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>7. Seguridad</h2>
+        <p>
+            Aplicamos medidas técnicas y organizativas razonables para proteger los datos personales
+            frente a accesos no autorizados, pérdida o alteración.
+        </p>
+    </div>
+</section>
+{% endblock %}

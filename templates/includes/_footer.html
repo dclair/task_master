@@ -1,8 +1,74 @@
-{# Footer simple de toda la aplicación. #}
-<footer class="bg-white py-4 mt-auto border-top">
-    <div class="container text-center">
-        <p class="text-muted mb-0 small">
-            &copy; 2026 <strong>Task Master</strong>. Desarrollado con ❤️ para organizar el caos.
-        </p>
+{% load static %}
+{# Footer extendido y coherente con el header oscuro. #}
+<footer class="site-footer mt-auto">
+    <div class="container py-4 py-md-5">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-5">
+                <a href="{% url 'home' %}" class="site-footer-brand text-decoration-none d-inline-flex align-items-center gap-2 mb-2">
+                    <img src="{% static 'img/taskmaster.png' %}" alt="Task Master" width="42" height="42" class="rounded-2">
+                    <span>TASK<span class="text-primary">MASTER</span></span>
+                </a>
+                <p class="site-footer-copy mb-0">
+                    Plataforma Kanban para planificar, colaborar y entregar tareas sin fricción.
+                </p>
+            </div>
+
+            <div class="col-6 col-md-3 col-lg-2">
+                <h6 class="site-footer-title">Navegación</h6>
+                <ul class="site-footer-links list-unstyled mb-0">
+                    <li><a href="{% url 'home' %}">Inicio</a></li>
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'boards:board_list' %}">Mis tableros</a></li>
+                    <li><a href="{% url 'boards:profile' %}">Perfil</a></li>
+                    {% else %}
+                    <li><a href="{% url 'login' %}">Entrar</a></li>
+                    <li><a href="{% url 'boards:signup' %}">Registrarme</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="col-6 col-md-3 col-lg-2">
+                <h6 class="site-footer-title">Cuenta</h6>
+                <ul class="site-footer-links list-unstyled mb-0">
+                    {% if user.is_authenticated %}
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="site-footer-link-btn">Cerrar sesión</button>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li><a href="{% url 'password_reset' %}">Recuperar contraseña</a></li>
+                    <li><a href="{% url 'resend_activation' %}">Reenviar activación</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="col-6 col-md-3 col-lg-2">
+                <h6 class="site-footer-title">Legal</h6>
+                <ul class="site-footer-links list-unstyled mb-0">
+                    <li><a href="{% url 'legal_notice' %}">Aviso legal</a></li>
+                    <li><a href="{% url 'privacy_policy' %}">Privacidad</a></li>
+                    <li><a href="{% url 'cookies_policy' %}">Cookies</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="site-footer-card">
+                    <p class="mb-2 fw-bold">Empieza ahora</p>
+                    <p class="mb-3 small text-white-50">Crea tableros, asigna tareas y sigue el progreso en tiempo real.</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'boards:board_list' %}" class="btn btn-primary btn-sm rounded-pill px-3">Ir a la app</a>
+                    {% else %}
+                    <a href="{% url 'boards:signup' %}" class="btn btn-primary btn-sm rounded-pill px-3">Crear cuenta</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="site-footer-bottom mt-4 pt-3 d-flex flex-column flex-md-row justify-content-between gap-2">
+            <p class="mb-0 small text-white-50">&copy; {% now "Y" %} Task Master. Todos los derechos reservados.</p>
+            <p class="mb-0 small text-white-50">Built for teams that ship.</p>
+        </div>
     </div>
 </footer>

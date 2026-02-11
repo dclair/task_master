@@ -60,6 +60,21 @@ def public_home(request):
 
 
 # ---------------------------------------------------------------------
+# Páginas legales estáticas
+# ---------------------------------------------------------------------
+def legal_notice(request):
+    return render(request, "legal/legal_notice.html")
+
+
+def privacy_policy(request):
+    return render(request, "legal/privacy_policy.html")
+
+
+def cookies_policy(request):
+    return render(request, "legal/cookies_policy.html")
+
+
+# ---------------------------------------------------------------------
 # Registro y activación de cuentas
 # ---------------------------------------------------------------------
 # Vista para el Registro de Usuarios

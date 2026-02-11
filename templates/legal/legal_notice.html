@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{# Página estática: aviso legal del sitio. #}
+
+{% block head_title %}Aviso Legal | Task Master{% endblock %}
+
+{% block content %}
+<section class="legal-page mx-auto">
+    <h1 class="legal-title">Aviso legal</h1>
+    <p class="legal-updated">Última actualización: {% now "d/m/Y" %}</p>
+
+    <div class="legal-card">
+        <h2>1. Titular del sitio</h2>
+        <p>
+            Este sitio web y la aplicación Task Master son titularidad del responsable que gestiona este proyecto.
+            Completa esta sección con tus datos reales:
+            nombre o razón social, NIF/CIF, domicilio y email de contacto.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>2. Objeto</h2>
+        <p>
+            El presente aviso legal regula el acceso, navegación y uso del sitio web y de los servicios
+            ofrecidos a través de Task Master.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>3. Condiciones de uso</h2>
+        <p>
+            El usuario se compromete a utilizar la plataforma de forma lícita, respetando la normativa vigente
+            y sin realizar acciones que puedan dañar la aplicación, su infraestructura o a terceros.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>4. Propiedad intelectual</h2>
+        <p>
+            Los contenidos, diseño, marcas y elementos de la plataforma están protegidos por la normativa aplicable
+            de propiedad intelectual e industrial. Queda prohibida su reproducción no autorizada.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>5. Responsabilidad</h2>
+        <p>
+            Se realizan esfuerzos razonables para mantener el servicio disponible y seguro. No obstante,
+            no se garantiza la ausencia total de errores, interrupciones o incidencias técnicas.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>6. Legislación aplicable</h2>
+        <p>
+            Este aviso legal se rige por la legislación aplicable en materia de servicios digitales,
+            protección de datos y consumo, según corresponda al territorio del responsable.
+        </p>
+    </div>
+</section>
+{% endblock %}

@@ -11,11 +11,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@300;400;500;600;700;800&family=Vercetti:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260211a">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260211b">
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="bg-light d-flex flex-column min-vh-100" data-authenticated="{{ user.is_authenticated|yesno:'true,false' }}">
 
     {# Navegación superior reutilizable en toda la app. #}
     {% include "includes/_header.html" %}
@@ -37,11 +37,13 @@
 
     {# Pie global reutilizable. #}
     {% include "includes/_footer.html" %}
+    {% include "includes/_cookie_banner.html" %}
 
     {# Scripts globales (Bootstrap, drag & drop y JS propio). #}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="{% static 'js/board_detail.js' %}"></script>
+    <script src="{% static 'js/cookie_banner.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

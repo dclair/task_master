@@ -16,6 +16,10 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     # Nuestras rutas de la app boards
     path("boards/", include("boards.urls")),
+    # Páginas legales
+    path("legal/aviso-legal/", board_views.legal_notice, name="legal_notice"),
+    path("legal/privacidad/", board_views.privacy_policy, name="privacy_policy"),
+    path("legal/cookies/", board_views.cookies_policy, name="cookies_policy"),
     # Home pública
     path("", board_views.public_home, name="home"),
 ]

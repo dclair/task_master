@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{# Página estática: política de cookies. #}
+
+{% block head_title %}Política de Cookies | Task Master{% endblock %}
+
+{% block content %}
+<section class="legal-page mx-auto">
+    <h1 class="legal-title">Política de cookies</h1>
+    <p class="legal-updated">Última actualización: {% now "d/m/Y" %}</p>
+
+    <div class="legal-card">
+        <h2>1. ¿Qué son las cookies?</h2>
+        <p>
+            Las cookies son pequeños archivos que se almacenan en tu dispositivo para recordar información
+            sobre tu navegación y mejorar la experiencia de uso.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>2. Cookies técnicas</h2>
+        <p>
+            Task Master utiliza cookies técnicas necesarias para el funcionamiento básico del servicio,
+            por ejemplo para mantener la sesión iniciada y proteger formularios.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>3. Cookies de análisis o terceros</h2>
+        <p>
+            Si incorporas herramientas de analítica, mapas o contenido de terceros, debes detallar aquí
+            qué cookies se instalan, su finalidad y su proveedor.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>4. Gestión desde el banner</h2>
+        <p>
+            En el banner puedes elegir: <strong>Aceptar todas</strong>, <strong>Solo imprescindibles</strong>
+            o <strong>Rechazar todas</strong>. Si rechazas todas, el sistema intentará no conservar cookies de sesión
+            y algunas funciones de autenticación y formularios pueden verse afectadas.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>5. Gestión de cookies</h2>
+        <p>
+            Puedes configurar tu navegador para permitir, bloquear o eliminar cookies. Ten en cuenta que
+            desactivar ciertas cookies puede afectar al funcionamiento de la aplicación.
+        </p>
+    </div>
+
+    <div class="legal-card">
+        <h2>6. Actualizaciones</h2>
+        <p>
+            Esta política puede actualizarse para adaptarse a cambios normativos o técnicos.
+            Se recomienda revisarla periódicamente.
+        </p>
+    </div>
+</section>
+{% endblock %}
