@@ -60,7 +60,7 @@
                         <label class="form-label small text-muted">Avatar</label>
                         {{ profile_form.avatar }}
                         <div class="mt-2">
-                            <img id="avatar-preview" alt="Vista previa" class="rounded-circle object-fit-cover border" style="width:72px;height:72px;" src="{{ profile.avatar_url }}">
+                            <img id="avatar-preview" alt="Vista previa" class="rounded-circle object-fit-cover border" style="width:72px;height:72px;" src="{{ profile_form.instance.avatar_url }}" data-current-src="{{ profile_form.instance.avatar_url }}">
                         </div>
                         {% if profile_form.avatar.errors %}
                         <div class="text-danger small mt-1">{{ profile_form.avatar.errors.0 }}</div>
@@ -136,12 +136,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const input = document.querySelector('input[type="file"][name="avatar"]');
   const preview = document.getElementById('avatar-preview');
   if (!input || !preview) return;
+  const currentSrc = preview.getAttribute('data-current-src') || '';
 
   input.addEventListener('change', () => {
     const file = input.files && input.files[0];
     if (!file) {
-      preview.style.display = 'none';
-      preview.removeAttribute('src');
+      if (currentSrc) {
+        preview.src = currentSrc;
+        preview.style.display = 'block';
+      }
       return;
     }
     const url = URL.createObjectURL(file);

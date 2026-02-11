@@ -121,6 +121,11 @@
         hideBanner();
         return;
       }
+
+      // Para usuarios autenticados, si no hay preferencia en backend
+      // mostramos banner siempre (evita heredar decisiones de otra cuenta en el mismo navegador).
+      showBanner();
+      return;
     }
 
     const stored = localStorage.getItem(STORAGE_KEY);

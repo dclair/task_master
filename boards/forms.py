@@ -105,6 +105,10 @@ class ProfileForm(forms.ModelForm):
         if not avatar:
             return avatar
 
+        # Si no es un upload nuevo (ej. imagen existente en perfil), no forzamos validación MIME.
+        if not hasattr(avatar, "content_type"):
+            return avatar
+
         content_type = getattr(avatar, "content_type", "")
         if content_type not in self.ALLOWED_CONTENT_TYPES:
             raise ValidationError("Formato de imagen no válido (usa JPG, PNG, GIF o WEBP).")
