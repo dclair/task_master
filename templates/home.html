@@ -1,0 +1,140 @@
+{% extends "layout.html" %}
+{% load static %}
+{# Landing pública de Task Master para usuarios no autenticados. #}
+
+{% block head_title %}TaskMaster | Organiza tu trabajo en equipo{% endblock %}
+
+{% block content %}
+{# Hero principal más visual: mensaje, CTA y preview del producto. #}
+<section class="home-hero position-relative overflow-hidden rounded-4 p-4 p-md-5 mb-4">
+    <div class="hero-blob hero-blob-a" aria-hidden="true"></div>
+    <div class="hero-blob hero-blob-b" aria-hidden="true"></div>
+
+    <div class="row align-items-center g-4 position-relative">
+        <div class="col-lg-6 hero-copy">
+            <span class="hero-kicker">
+                <i class="bi bi-stars"></i> Productividad visual para equipos
+            </span>
+            <h1 class="hero-title mb-3">
+                Del caos de tareas
+                <span class="hero-emphasis d-block">a ejecución clara</span>
+            </h1>
+            <p class="hero-subtitle mb-4">
+                Centraliza proyectos, asigna responsabilidades y sigue el progreso en tiempo real
+                desde un tablero que todos entienden.
+            </p>
+
+            <div class="hero-cta-group mb-4">
+                <a href="{% url 'boards:signup' %}" class="btn hero-btn hero-btn-primary">
+                    Crear cuenta gratis
+                </a>
+                <a href="{% url 'login' %}" class="btn hero-btn hero-btn-secondary">
+                    Ya tengo cuenta
+                </a>
+            </div>
+
+            <div class="hero-chips d-flex flex-wrap gap-2">
+                <span class="hero-chip"><i class="bi bi-columns-gap"></i> Kanban</span>
+                <span class="hero-chip"><i class="bi bi-people"></i> Colaboración</span>
+                <span class="hero-chip"><i class="bi bi-bell"></i> Alertas inteligentes</span>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="hero-visual-wrap">
+                <div class="hero-stat-card stat-top">
+                    <div class="hero-stat-value">+128</div>
+                    <div class="hero-stat-label">tareas cerradas esta semana</div>
+                </div>
+
+                <div class="hero-main-card">
+                    <img src="{% static 'img/hero-img.png' %}" alt="Vista previa de Task Master" class="img-fluid hero-main-image">
+                </div>
+
+                <div class="hero-stat-card stat-bottom">
+                    <div class="hero-stat-value">94%</div>
+                    <div class="hero-stat-label">equipos con avances diarios</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Carrusel demo 16:9 para mostrar pantallas de la app. #}
+<section class="home-showcase mb-4">
+    <div id="taskmasterShowcase" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4500">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#taskmasterShowcase" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#taskmasterShowcase" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#taskmasterShowcase" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            <button type="button" data-bs-target="#taskmasterShowcase" data-bs-slide-to="3" aria-label="Slide 4"></button>
+        </div>
+
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="showcase-frame">
+                    <img src="{% static 'img/hero-img.png' %}" class="d-block w-100 showcase-image" alt="Vista general de tableros">
+                    <div class="showcase-caption">Vista general de tableros</div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="showcase-frame">
+                    <img src="{% static 'img/hero-img.png' %}" class="d-block w-100 showcase-image" alt="Gestión de tareas en Kanban">
+                    <div class="showcase-caption">Gestión de tareas en Kanban</div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="showcase-frame">
+                    <img src="{% static 'img/hero-img.png' %}" class="d-block w-100 showcase-image" alt="Asignación y colaboración de equipo">
+                    <div class="showcase-caption">Asignación y colaboración de equipo</div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="showcase-frame">
+                    <img src="{% static 'img/hero-img.png' %}" class="d-block w-100 showcase-image" alt="Seguimiento del progreso">
+                    <div class="showcase-caption">Seguimiento del progreso</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#taskmasterShowcase" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#taskmasterShowcase" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+        </button>
+    </div>
+</section>
+
+{# Beneficios destacados para explicar el valor de la app. #}
+<section class="py-2 pb-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-2"><i class="bi bi-columns-gap me-2 text-primary"></i>Tableros Kanban</h5>
+                    <p class="text-muted small mb-0">Visualiza el estado real de cada tarea con listas claras y ordenadas.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-2"><i class="bi bi-people me-2 text-primary"></i>Trabajo colaborativo</h5>
+                    <p class="text-muted small mb-0">Invita miembros, asigna roles y coordina avances en un mismo lugar.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-2"><i class="bi bi-bell me-2 text-primary"></i>Notificaciones útiles</h5>
+                    <p class="text-muted small mb-0">Recibe avisos de asignación, vencimientos y cambios de estado.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

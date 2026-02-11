@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
 from boards import views as board_views
 
 urlpatterns = [
@@ -17,8 +16,8 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     # Nuestras rutas de la app boards
     path("boards/", include("boards.urls")),
-    # Redirigir la raíz a los tableros
-    path("", RedirectView.as_view(url="/boards/", permanent=True)),
+    # Home pública
+    path("", board_views.public_home, name="home"),
 ]
 
 if settings.DEBUG:

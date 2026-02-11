@@ -49,6 +49,17 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------
+# Home pública (landing)
+# ---------------------------------------------------------------------
+def public_home(request):
+    # Si el usuario ya inició sesión, lo llevamos directo al área de trabajo.
+    if request.user.is_authenticated:
+        return redirect("boards:board_list")
+
+    return render(request, "home.html")
+
+
+# ---------------------------------------------------------------------
 # Registro y activación de cuentas
 # ---------------------------------------------------------------------
 # Vista para el Registro de Usuarios
