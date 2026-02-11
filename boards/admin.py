@@ -17,7 +17,7 @@ class BoardMembershipAdmin(admin.ModelAdmin):
 # Perfil extendido del usuario (avatar y preferencias de notificación).
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "avatar")
+    list_display = ("user", "avatar", "cookie_consent", "cookie_consent_updated_at")
     search_fields = ("user__username", "user__email")
 
 

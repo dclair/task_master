@@ -1,5 +1,6 @@
 (() => {
   const STORAGE_KEY = "tm_cookie_consent_v1";
+  const COOKIE_API_URL = "/accounts/cookie-consent/";
   const OPTIONAL_COOKIE = "_tm_optional";
   const SESSION_COOKIE = "sessionid";
   const CSRF_COOKIE = "csrftoken";
@@ -24,6 +25,49 @@
       STORAGE_KEY,
       JSON.stringify({ choice, at: new Date().toISOString() })
     );
+  };
+
+  const getCookie = (name) => {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === `${name}=`) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  };
+
+  const syncChoiceToBackend = async (choice) => {
+    if (!isAuthenticated) return;
+    const csrf = getCookie(CSRF_COOKIE);
+    if (!csrf) return;
+
+    await fetch(COOKIE_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrf,
+      },
+      body: JSON.stringify({ choice }),
+      credentials: "same-origin",
+    });
+  };
+
+  const loadChoiceFromBackend = async () => {
+    if (!isAuthenticated) return null;
+    try {
+      const response = await fetch(COOKIE_API_URL, { credentials: "same-origin" });
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data && data.choice ? data.choice : null;
+    } catch {
+      return null;
+    }
   };
 
   const applyChoice = (choice) => {
@@ -69,17 +113,30 @@
   const hideBanner = () => banner.classList.add("d-none");
   const showBanner = () => banner.classList.remove("d-none");
 
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    hideBanner();
-  } else {
+  const initBanner = async () => {
+    if (isAuthenticated) {
+      const backendChoice = await loadChoiceFromBackend();
+      if (backendChoice) {
+        rememberChoice(backendChoice);
+        hideBanner();
+        return;
+      }
+    }
+
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      hideBanner();
+      return;
+    }
+
     showBanner();
-  }
+  };
 
   banner.querySelectorAll("[data-cookie-choice]").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const choice = btn.getAttribute("data-cookie-choice");
       rememberChoice(choice);
+      await syncChoiceToBackend(choice);
       applyChoice(choice);
 
       // Damos tiempo a mostrar nota en rechazo antes de ocultar (si no hay logout).
@@ -90,4 +147,6 @@
       }
     });
   });
+
+  initBanner();
 })();

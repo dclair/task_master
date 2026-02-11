@@ -74,6 +74,41 @@ def cookies_policy(request):
     return render(request, "legal/cookies_policy.html")
 
 
+@login_required
+def cookie_consent_preference(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "GET":
+        return JsonResponse(
+            {
+                "choice": profile.cookie_consent,
+                "updated_at": (
+                    profile.cookie_consent_updated_at.isoformat()
+                    if profile.cookie_consent_updated_at
+                    else None
+                ),
+            }
+        )
+
+    if request.method != "POST":
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"detail": "JSON inválido"}, status=400)
+
+    choice = (payload.get("choice") or "").strip().lower()
+    allowed = {"all", "essential", "reject"}
+    if choice not in allowed:
+        return JsonResponse({"detail": "Preferencia inválida"}, status=400)
+
+    profile.cookie_consent = choice
+    profile.cookie_consent_updated_at = timezone.now()
+    profile.save(update_fields=["cookie_consent", "cookie_consent_updated_at"])
+    return JsonResponse({"ok": True, "choice": choice})
+
+
 # ---------------------------------------------------------------------
 # Registro y activación de cuentas
 # ---------------------------------------------------------------------

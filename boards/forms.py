@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from email.mime.image import MIMEImage
 import os
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from django.contrib.auth.models import User
 from .models import Board, TaskList, Task, UserProfile
 
@@ -79,12 +80,25 @@ class ProfileForm(forms.ModelForm):
             "notify_task_assigned",
             "notify_task_due",
             "notify_task_status",
+            "cookie_consent",
         )
         widgets = {
             "bio": forms.Textarea(
                 attrs={"class": "form-control rounded-4", "rows": 3}
             ),
+            "cookie_consent": forms.Select(
+                attrs={"class": "form-select rounded-pill"}
+            ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["cookie_consent"].required = False
+        self.fields["cookie_consent"].label = "Preferencia de cookies"
+        self.fields["cookie_consent"].choices = [
+            ("", "Sin definir"),
+            *UserProfile.COOKIE_CONSENT_CHOICES,
+        ]
 
     def clean_avatar(self):
         avatar = self.cleaned_data.get("avatar")
@@ -99,6 +113,20 @@ class ProfileForm(forms.ModelForm):
             raise ValidationError("La imagen supera el tamaño máximo de 2MB.")
 
         return avatar
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        selected = profile.cookie_consent or None
+        previous = None
+        if self.instance and self.instance.pk:
+            previous = self.instance.cookie_consent
+
+        if selected != previous:
+            profile.cookie_consent_updated_at = timezone.now() if selected else None
+
+        if commit:
+            profile.save()
+        return profile
 
 
 # Actualiza datos base del usuario (tabla auth_user).

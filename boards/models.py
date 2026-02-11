@@ -131,6 +131,12 @@ class Task(models.Model):
 
 # Preferencias y datos extendidos del usuario.
 class UserProfile(models.Model):
+    COOKIE_CONSENT_CHOICES = [
+        ("all", "Aceptar todas"),
+        ("essential", "Solo imprescindibles"),
+        ("reject", "Rechazar todas"),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
@@ -140,6 +146,13 @@ class UserProfile(models.Model):
     pending_email = models.EmailField(blank=True, null=True)
     pending_email_token = models.CharField(max_length=255, blank=True, null=True)
     pending_email_created_at = models.DateTimeField(blank=True, null=True)
+    cookie_consent = models.CharField(
+        max_length=20,
+        choices=COOKIE_CONSENT_CHOICES,
+        blank=True,
+        null=True,
+    )
+    cookie_consent_updated_at = models.DateTimeField(blank=True, null=True)
     notify_task_due = models.BooleanField(default=True)
     notify_task_status = models.BooleanField(default=True)
 
