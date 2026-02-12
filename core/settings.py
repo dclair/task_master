@@ -1,9 +1,9 @@
 from pathlib import Path
-import os  # Añadimos os para facilitar rutas si fuera necesario
+import os  # Uso os para facilitar carga de rutas y variables de entorno.
 from django.contrib.messages import constants as messages
 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Construyo rutas base del proyecto a partir de BASE_DIR.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -24,19 +24,19 @@ def load_env(path):
 load_env(BASE_DIR / ".env")
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+# Mantengo esta configuración pensada para desarrollo, no para producción.
+# Referencia: https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# En producción debo proteger SECRET_KEY y gestionarla por entorno.
 SECRET_KEY = "django-insecure-@j_p^q%1!o1_a%qpg1cfgz83+7!-xnyo_b7&8py@72rim8m4^n"
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# En producción debo desactivar DEBUG.
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
 
-# Application definition
+# Defino aquí las aplicaciones instaladas.
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -63,7 +63,7 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # MODIFICACIÓN: Ahora Django buscará en tu carpeta raíz 'templates'
+        # Indico que Django busque plantillas tambien en la carpeta global templates.
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -80,8 +80,8 @@ TEMPLATES = [
 WSGI_APPLICATION = "core.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+# Defino la base de datos por defecto.
+# Referencia: https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     "default": {
@@ -91,8 +91,8 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+# Defino validadores de contraseña.
+# Referencia: https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -110,10 +110,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
+# Defino idioma y configuración de internacionalización.
+# Referencia: https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-# MODIFICACIÓN: Idioma en español y zona horaria adecuada
+# Ajusto idioma a español y mantengo zona horaria configurada.
 LANGUAGE_CODE = "es-es"
 
 TIME_ZONE = "UTC"
@@ -123,55 +123,53 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
-# core/settings.py
+# Defino archivos estaticos (CSS, JavaScript e imágenes).
+# Referencia: https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
 
-# Esta es la parte clave para carpetas globales
+# Declaro carpeta global de estaticos.
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
-# MODIFICACIÓN: Ruta para que Django encuentre tu carpeta 'static' en la raíz
+# Repito STATICFILES_DIRS para asegurar deteccion de carpeta static global.
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-# OPCIONAL: Configuración de archivos subidos por el usuario (Media)
+# Defino archivos subidos por usuario (media).
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+# Defino el tipo de clave primaria por defecto.
+# Referencia: https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Configuración de redirección de autenticación
+# Configuro redirecciones de autenticación.
 LOGIN_REDIRECT_URL = "boards:board_list"
 LOGOUT_REDIRECT_URL = "login"
 
-# Activación de cuenta (segundos)
+# Configuro expiración del token de activación (segundos).
 ACTIVATION_TOKEN_TIMEOUT = 60 * 60 * 24  # 24 horas
 
-# Invitaciones a tableros (segundos)
+# Configuro expiración del token de invitación (segundos).
 INVITE_TOKEN_TIMEOUT = 60 * 60 * 24 * 7  # 7 días
 
-# Correo desde el que se envían los mensajes
+# Defino el correo remitente para emails salientes.
 DEFAULT_FROM_EMAIL = os.getenv("EMAIL_USER")
 
-# Correo de la empresa que recibirá los mensajes
+# Defino el correo de contacto que recibe mensajes.
 CONTACT_EMAIL = os.getenv("EMAIL_USER")
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 DEFAULT_FROM_EMAIL = os.getenv("EMAIL_USER")
 SERVER_EMAIL = os.getenv("EMAIL_USER")
-# Configuración de Gmail
+# Configuro servidor SMTP de Gmail.
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# Tus credenciales
+# Cargo credenciales SMTP desde variables de entorno.
 EMAIL_HOST_USER = os.getenv("EMAIL_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASS")  # 'EMAIL_PASS' debe ir con comillas
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASS")  # Uso la variable EMAIL_PASS desde el entorno.

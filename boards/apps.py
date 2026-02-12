@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class BoardsConfig(AppConfig):
-    # Configuración base de la aplicación "boards".
+    # Defino la configuración base para que Django cargue esta app.
     name = 'boards'

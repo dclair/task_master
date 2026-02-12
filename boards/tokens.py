@@ -4,17 +4,17 @@ from django.utils.crypto import constant_time_compare
 from django.utils.http import base36_to_int
 
 
-# Generador de tokens de activación con soporte de expiración explícita.
+# Creo un generador de tokens de activación con expiración explícita.
 class ActivationTokenGenerator(PasswordResetTokenGenerator):
-    # API compatible con PasswordResetTokenGenerator.
+    # Mantengo API compatible con PasswordResetTokenGenerator.
     def check_token(self, user, token):
         return self.get_token_state(user, token) == "valid"
 
-    # Devuelve estado detallado: valid | expired | invalid.
+    # Devuelvo estado detallado: valid | expired | invalid.
     def get_token_state(self, user, token):
         if not (user and token):
             return "invalid"
-        # Same format as PasswordResetTokenGenerator: "{ts}-{hash}"
+        # Mantengo el mismo formato que PasswordResetTokenGenerator: "{ts}-{hash}".
         try:
             ts_b36, _ = token.split("-", 1)
         except ValueError:
@@ -25,7 +25,7 @@ class ActivationTokenGenerator(PasswordResetTokenGenerator):
         except ValueError:
             return "invalid"
 
-        # Check that the timestamp/uid has not been tampered with
+        # Verifico que timestamp/uid no hayan sido alterados.
         for secret in [self.secret, *self.secret_fallbacks]:
             if constant_time_compare(
                 self._make_token_with_timestamp(user, ts, secret),
@@ -41,5 +41,5 @@ class ActivationTokenGenerator(PasswordResetTokenGenerator):
         return "valid"
 
 
-# Instancia reutilizable para todo el flujo de activación.
+# Reutilizo esta instancia en todo el flujo de activación.
 activation_token_generator = ActivationTokenGenerator()

@@ -3,7 +3,7 @@ from . import views
 
 app_name = "boards"
 
-# Rutas de la app boards: auth extendida, tableros, tareas, miembros, invitaciones y exportaciones.
+# Declaro aquí todas las rutas de tableros para centralizar auth, kanban y exportaciones.
 urlpatterns = [
     path("", views.BoardListView.as_view(), name="board_list"),
     path("activate/<uidb64>/<token>/", views.activate_account, name="activate"),
@@ -12,6 +12,8 @@ urlpatterns = [
     path("profile/edit/", views.ProfileUpdateView.as_view(), name="profile_edit"),
     path("profile/email-change/<str:token>/", views.confirm_email_change, name="email_change_confirm"),
     path("create/", views.BoardCreateView.as_view(), name="board_create"),
+    path("<int:pk>/edit/", views.BoardUpdateView.as_view(), name="board_edit"),
+    path("<int:pk>/delete/", views.delete_board, name="board_delete"),
     path("<int:pk>/", views.BoardDetailView.as_view(), name="board_detail"),
     path("board/<int:board_id>/add-list/", views.add_list, name="add_list"),
     path("list/<int:list_id>/add-task/", views.add_task, name="add_task"),

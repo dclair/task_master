@@ -49,10 +49,10 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------
-# Home pública (landing)
+# Aquí agrupo vistas de entrada y páginas públicas
 # ---------------------------------------------------------------------
 def public_home(request):
-    # Si el usuario ya inició sesión, lo llevamos directo al área de trabajo.
+    # Si ya hay sesión activa, redirijo al espacio de trabajo.
     if request.user.is_authenticated:
         return redirect("boards:board_list")
 
@@ -60,7 +60,7 @@ def public_home(request):
 
 
 # ---------------------------------------------------------------------
-# Páginas legales estáticas
+# Aquí renderizo páginas legales estáticas
 # ---------------------------------------------------------------------
 def legal_notice(request):
     return render(request, "legal/legal_notice.html")
@@ -110,9 +110,9 @@ def cookie_consent_preference(request):
 
 
 # ---------------------------------------------------------------------
-# Registro y activación de cuentas
+# Aquí concentro registro y activación de cuentas
 # ---------------------------------------------------------------------
-# Vista para el Registro de Usuarios
+# Uso esta vista para registrar cuentas nuevas.
 class SignUpView(CreateView):
     form_class = SignUpForm
     success_url = reverse_lazy("login")
@@ -149,7 +149,7 @@ class SignUpView(CreateView):
             return redirect(resend_url)
 
 
-# Envía el email inicial de activación de cuenta.
+# Envío el email inicial de activación de cuenta.
 def send_activation_email(request, user):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = activation_token_generator.make_token(user)
@@ -172,7 +172,7 @@ def send_activation_email(request, user):
     )
 
 
-# Notifica al usuario que su cuenta quedó activada.
+# Notifico al usuario que su cuenta ya quedo activada.
 def send_activation_success_email(request, user):
     login_url = request.build_absolute_uri(reverse("login"))
     context = {"user": user, "login_url": login_url}
@@ -187,7 +187,7 @@ def send_activation_success_email(request, user):
     )
 
 
-# Envía invitación a un tablero por email.
+# Envío la invitación a tablero por email.
 def send_invite_email(request, invite):
     invite_token = signing.dumps({"invite_id": invite.id})
     invite_url = request.build_absolute_uri(
@@ -208,7 +208,7 @@ def send_invite_email(request, invite):
     )
 
 
-# Notifica asignación de tarea.
+# Notifico la asignacion de una tarea.
 def send_task_assigned_email(request, task, user):
     board = task.task_list.board
     board_url = build_board_url(board.id, request=request)
@@ -229,7 +229,7 @@ def send_task_assigned_email(request, task, user):
     )
 
 
-# Notifica tareas que están por vencer.
+# Notifico tareas que estan por vencer.
 def send_task_due_soon_email(task, user, board_url):
     board = task.task_list.board
     context = {
@@ -251,7 +251,7 @@ def send_task_due_soon_email(task, user, board_url):
     )
 
 
-# Notifica tareas vencidas.
+# Notifico tareas ya vencidas.
 def send_task_overdue_email(task, user, board_url):
     board = task.task_list.board
     context = {
@@ -271,7 +271,7 @@ def send_task_overdue_email(task, user, board_url):
     )
 
 
-# Notifica cambios de estado cuando una tarea se mueve de columna.
+# Notifico cambios de estado cuando una tarea cambia de columna.
 def send_task_status_changed_email(task, user, board_url, from_status, to_status):
     board = task.task_list.board
     context = {
@@ -298,7 +298,7 @@ def send_task_status_changed_email(task, user, board_url, from_status, to_status
     )
 
 
-# Flujo para verificar un cambio de email del perfil.
+# Valido el flujo de verificacion para cambio de email del perfil.
 def send_email_change_verification(request, user, new_email, token):
     confirm_url = request.build_absolute_uri(
         reverse("boards:email_change_confirm", args=[token])
@@ -319,7 +319,7 @@ def send_email_change_verification(request, user, new_email, token):
     )
 
 
-# Helper común para enviar emails HTML con logo embebido.
+# Centralizo aquí el envío de emails HTML con logo embebido.
 def send_html_email(subject, text_body, html_body, to_emails):
     email = EmailMultiAlternatives(
         subject,
@@ -343,7 +343,7 @@ def send_html_email(subject, text_body, html_body, to_emails):
 
 
 # ---------------------------------------------------------------------
-# Login y recuperación de contraseña
+# Aquí concentro login y recuperación de contraseña
 # ---------------------------------------------------------------------
 class CustomLoginView(LoginView):
     authentication_form = CustomAuthenticationForm
@@ -381,7 +381,7 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = "registration/password_reset_complete.html"
 
 
-# Formulario mínimo para reenviar link de activación.
+# Defino un formulario mínimo para reenviar el link de activación.
 class ResendActivationForm(forms.Form):
     username = forms.CharField(
         widget=forms.TextInput(attrs={"class": "form-control rounded-pill"})
@@ -428,7 +428,7 @@ class ResendActivationView(FormView):
         return redirect(self.get_success_url())
 
 
-# Valida token de activación, activa usuario y redirige con mensajes.
+# Valido el token de activación, activo usuario y redirijo con mensajes.
 def activate_account(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -459,7 +459,7 @@ def activate_account(request, uidb64, token):
     return redirect("login")
 
 
-# Confirma un cambio de email pendiente usando token firmado.
+# Confirmo un cambio de email pendiente usando token firmado.
 def confirm_email_change(request, token):
     try:
         data = signing.loads(token, salt="email-change", max_age=60 * 60 * 24)
@@ -503,7 +503,7 @@ def confirm_email_change(request, token):
 
 
 # ---------------------------------------------------------------------
-# Perfil de usuario
+# Aquí agrupo vistas de perfil de usuario
 # ---------------------------------------------------------------------
 class ProfileView(LoginRequiredMixin, DetailView):
     model = UserProfile
@@ -580,20 +580,20 @@ class ProfileUpdateView(LoginRequiredMixin, FormView):
 
 
 # ---------------------------------------------------------------------
-# Tableros y detalle Kanban
+# Aquí manejo tableros y el detalle Kanban
 # ---------------------------------------------------------------------
-# Vista para listar los Tableros del usuario
+# Uso esta vista para listar tableros accesibles por el usuario.
 class BoardListView(LoginRequiredMixin, ListView):
     model = Board
     template_name = "boards/home.html"
     context_object_name = "boards"
 
     def get_queryset(self):
-        # Tableros donde el usuario es miembro
+        # Filtro solo tableros donde el usuario participa como miembro.
         return Board.objects.filter(memberships__user=self.request.user).distinct()
 
 
-# Vista para crear un Tablero
+# Uso esta vista para crear un tablero.
 class BoardCreateView(LoginRequiredMixin, CreateView):
     model = Board
     form_class = BoardForm
@@ -610,14 +610,25 @@ class BoardCreateView(LoginRequiredMixin, CreateView):
         _log_activity(board, self.request.user, "Tablero creado", board.title)
         return redirect(self.success_url)
 
+
+class BoardUpdateView(LoginRequiredMixin, UpdateView):
+    model = Board
+    form_class = BoardForm
+    template_name = "boards/board_form.html"
+    success_url = reverse_lazy("boards:board_list")
+
+    def get_object(self, queryset=None):
+        board = super().get_object(queryset)
+        _require_owner(board, self.request.user)
+        return board
+
     def form_valid(self, form):
-        # Asignamos el usuario actual como dueño del tablero
-        form.instance = form.save(commit=False)
-        form.instance.owner = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        _log_activity(self.object, self.request.user, "Tablero actualizado", self.object.title)
+        return response
 
 
-# Vista para ver un Tablero en detalle
+# Uso esta vista para mostrar el tablero en detalle.
 class BoardDetailView(LoginRequiredMixin, DetailView):
     model = Board
     template_name = "boards/board_detail.html"
@@ -635,7 +646,7 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         board = self.get_object()
 
-        # --- 1. LÓGICA DE FILTRADO Y DEFINICIÓN DE LISTAS ---
+        # 1) Aplico filtros y preparo listas con sus tareas.
         active_tag_id = self.request.GET.get("tag")
         tasks_queryset = Task.objects.all()
 
@@ -643,12 +654,12 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
             tasks_queryset = tasks_queryset.filter(tags__id=active_tag_id)
             context["active_tag"] = get_object_or_404(Tag, id=active_tag_id)
 
-        # Aquí definimos la variable que te daba el NameError
+        # Aquí preparo la variable intermedia para evitar errores de contexto.
         lists_with_filtered_tasks = board.lists.prefetch_related(
             Prefetch("tasks", queryset=tasks_queryset.order_by("position"))
         )
 
-        # --- 2. CÁLCULO DE PROGRESO ---
+        # 2) Calculo progreso global del tablero.
         all_tasks = Task.objects.filter(task_list__board=board)
         total_count = all_tasks.count()
 
@@ -662,12 +673,12 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
 
         progress = int((done_tasks / total_count) * 100) if total_count > 0 else 0
 
-        # --- 3. PASAR DATOS AL CONTEXTO ---
+        # 3) Paso datos listos al contexto de plantilla.
         context["board_lists"] = lists_with_filtered_tasks
         context["progress"] = progress
         context["done_tasks"] = done_tasks
         context["total_tasks"] = (
-            total_count  # Corregido: antes intentabas usar total_tasks sin definirlo
+            total_count
         )
         membership = BoardMembership.objects.filter(
             board=board, user=self.request.user
@@ -689,7 +700,7 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
             board.activities.values_list("action", flat=True).distinct()
         )
 
-        # Etiquetas para el resumen superior y el modal
+        # Cargo etiquetas para resumen superior y modal de tareas.
         context["board_tags"] = (
             Tag.objects.filter(tasks__task_list__board=board)
             .annotate(num_tasks=Count("tasks", filter=Q(tasks__task_list__board=board)))
@@ -703,9 +714,9 @@ class BoardDetailView(LoginRequiredMixin, DetailView):
 
 
 # ---------------------------------------------------------------------
-# Operaciones sobre listas y tareas
+# Aquí concentro operaciones de listas y tareas
 # ---------------------------------------------------------------------
-# Vista para añadir una Lista
+# Uso esta vista para anadir una lista.
 def add_list(request, board_id):
     board = get_object_or_404(Board, id=board_id)
     membership = BoardMembership.objects.filter(board=board, user=request.user).first()
@@ -716,14 +727,14 @@ def add_list(request, board_id):
         if form.is_valid():
             new_list = form.save(commit=False)
             new_list.board = board
-            # Calculamos la posición (la última)
+            # Calculo posicion inicial al final de la columna.
             new_list.position = board.lists.count()
             new_list.save()
             _log_activity(board, request.user, "Lista creada", new_list.title)
     return redirect("boards:board_detail", pk=board_id)
 
 
-# funcion para añadir una Tarea
+# Uso esta vista para anadir una tarea.
 def add_task(request, list_id):
     task_list = get_object_or_404(TaskList, id=list_id)
     membership = BoardMembership.objects.filter(
@@ -753,18 +764,18 @@ def add_task(request, list_id):
                     except Exception:
                         logger.exception("Fallo al enviar email de asignación")
 
-            # --- PARTE NUEVA PARA ETIQUETAS ---
-            selected_tags = request.POST.getlist("tags")  # Captura los checkboxes
-            task.tags.set(selected_tags)  # Guarda las etiquetas en la tarea
+            # Guardo etiquetas asociadas desde checkboxes del modal.
+            selected_tags = request.POST.getlist("tags")
+            task.tags.set(selected_tags)
             _log_activity(task_list.board, request.user, "Tarea creada", task.title)
     return redirect("boards:board_detail", pk=task_list.board.id)
 
 
-# funcion para eliminar una Lista
+# Uso esta vista para eliminar una lista.
 @login_required
 @require_POST
 def delete_list(request, list_id):
-    # Buscamos la lista asegurándonos de que el tablero pertenece al usuario
+    # Busco la lista y valido permisos sobre su tablero.
     task_list = get_object_or_404(TaskList, id=list_id)
     membership = BoardMembership.objects.filter(
         board=task_list.board, user=request.user
@@ -777,11 +788,11 @@ def delete_list(request, list_id):
     return redirect("boards:board_detail", pk=board_id)
 
 
-# funcion para eliminar una Tarea
+# Uso esta vista para eliminar una tarea.
 @login_required
 @require_POST
 def delete_task(request, task_id):
-    # Buscamos la tarea validando que el tablero pertenezca al usuario actual
+    # Busco la tarea y valido permisos sobre el tablero actual.
     task = get_object_or_404(Task, id=task_id)
     membership = BoardMembership.objects.filter(
         board=task.task_list.board, user=request.user
@@ -794,7 +805,7 @@ def delete_task(request, task_id):
     return redirect("boards:board_detail", pk=board_id)
 
 
-# funcion para mover una Tarea
+# Uso esta vista para mover una tarea entre listas.
 @login_required
 def move_task(request):
     if request.method == "POST":
@@ -802,7 +813,7 @@ def move_task(request):
         task_id = data.get("task_id")
         new_list_id = data.get("new_list_id")
 
-        # Buscamos la tarea y la nueva lista
+        # Busco la tarea origen y la lista destino.
         task = get_object_or_404(Task, id=task_id)
         new_list = get_object_or_404(TaskList, id=new_list_id)
         membership = BoardMembership.objects.filter(
@@ -849,7 +860,7 @@ def move_task(request):
     return JsonResponse({"status": "error"}, status=400)
 
 
-# funcion para editar una Tarea
+# Uso esta vista para editar una tarea.
 @login_required
 @require_POST
 def edit_task(request, task_id):
@@ -862,7 +873,7 @@ def edit_task(request, task_id):
     if not membership or membership.role not in ["owner", "editor"]:
         raise PermissionDenied
 
-    # Actualizamos los campos con lo que viene del formulario
+    # Actualizo campos con los datos recibidos del formulario.
     task.title = request.POST.get("title")
     task.description = request.POST.get("description")
     task.priority = request.POST.get("priority")
@@ -884,7 +895,7 @@ def edit_task(request, task_id):
     else:
         task.assigned_to.clear()
 
-    # Manejo de la fecha (puede venir vacía)
+    # Ajusto fecha límite; puede venir vacía.
     due_date = request.POST.get("due_date")
     task.due_date = due_date if due_date else None
     if task.due_date != prev_due_date:
@@ -893,14 +904,25 @@ def edit_task(request, task_id):
 
     task.save()
 
-    # --- PARTE NUEVA PARA ETIQUETAS ---
+    # Actualizo etiquetas seleccionadas.
     selected_tags = request.POST.getlist("tags")
-    task.tags.set(selected_tags)  # Actualiza la lista de etiquetas
+    task.tags.set(selected_tags)
     _log_activity(task.task_list.board, request.user, "Tarea actualizada", task.title)
     return redirect("boards:board_detail", pk=task.task_list.board.id)
 
 
-# Helpers de permisos y auditoría de acciones.
+@login_required
+@require_POST
+def delete_board(request, pk):
+    board = get_object_or_404(Board, pk=pk)
+    _require_owner(board, request.user)
+    board_title = board.title
+    board.delete()
+    messages.success(request, f"Tablero '{board_title}' eliminado.")
+    return redirect("boards:board_list")
+
+
+# Centralizo helpers de permisos y auditoría.
 def _require_owner(board, user):
     membership = BoardMembership.objects.filter(board=board, user=user).first()
     if not membership or membership.role != "owner":
@@ -917,7 +939,7 @@ def _require_member(board, user):
 
 
 # ---------------------------------------------------------------------
-# Gestión de miembros del tablero
+# Aquí gestiono miembros y roles del tablero
 # ---------------------------------------------------------------------
 @login_required
 @require_POST
@@ -976,7 +998,7 @@ def remove_member(request, board_id, membership_id):
 
 
 # ---------------------------------------------------------------------
-# Exportaciones
+# Aquí expongo exportaciones de datos
 # ---------------------------------------------------------------------
 @login_required
 def export_tasks_csv(request, board_id):
@@ -1107,7 +1129,7 @@ def export_activity_csv(request, board_id):
 
 
 # ---------------------------------------------------------------------
-# Invitaciones por email y aceptación
+# Aquí gestiono invitaciones por email y su aceptación
 # ---------------------------------------------------------------------
 @login_required
 @require_POST

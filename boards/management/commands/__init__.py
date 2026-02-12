@@ -1,1 +1,1 @@
-# Package marker for management commands.
+# Marco este paquete para registrar comandos custom de Django.

@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-# Entidad principal del proyecto: tablero Kanban.
+# Defino aquí la entidad principal del proyecto: tablero Kanban.
 class Board(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -15,7 +15,7 @@ class Board(models.Model):
         return self.title
 
 
-# Relación usuario-tablero con rol de permisos.
+# Defino la relacion usuario-tablero con rol de permisos.
 class BoardMembership(models.Model):
     ROLE_CHOICES = [
         ("owner", "Owner"),
@@ -35,7 +35,7 @@ class BoardMembership(models.Model):
         return f"{self.user.username} - {self.board.title} ({self.role})"
 
 
-# Invitaciones pendientes para dar acceso al tablero.
+# Guardo invitaciones pendientes para dar acceso al tablero.
 class BoardInvite(models.Model):
     ROLE_CHOICES = BoardMembership.ROLE_CHOICES
 
@@ -56,7 +56,7 @@ class BoardInvite(models.Model):
         return f"{self.email} - {self.board.title} ({self.role})"
 
 
-# Columnas/listas dentro del tablero (por hacer, en curso, done, etc.).
+# Defino columnas/listas dentro del tablero (por hacer, en curso, done, etc.).
 class TaskList(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="lists")
     title = models.CharField(max_length=100)
@@ -69,9 +69,9 @@ class TaskList(models.Model):
         return f"{self.title} ({self.board.title})"
 
 
-# Catálogo de etiquetas reutilizables para clasificar tareas.
+# Mantengo un catálogo de etiquetas reutilizables para clasificar tareas.
 class Tag(models.Model):
-    # Colores pastel elegantes
+    # Defino una paleta de colores simple para etiquetas.
     COLOR_CHOICES = [
         ("#d1e7dd", "Verde"),
         ("#f8d7da", "Rojo"),
@@ -87,7 +87,7 @@ class Tag(models.Model):
         return self.name
 
 
-# Tarea individual dentro de una columna del tablero.
+# Represento una tarea individual dentro de una columna del tablero.
 class Task(models.Model):
     PRIORITY_CHOICES = [
         ("low", "Baja"),
@@ -129,7 +129,7 @@ class Task(models.Model):
         return self.title
 
 
-# Preferencias y datos extendidos del usuario.
+# Almaceno preferencias y datos extendidos del usuario.
 class UserProfile(models.Model):
     COOKIE_CONSENT_CHOICES = [
         ("all", "Aceptar todas"),
@@ -165,7 +165,7 @@ class UserProfile(models.Model):
         return self.user.username
 
 
-# Registro de eventos para el feed de actividad por tablero.
+# Registro eventos para el feed de actividad por tablero.
 class Activity(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="activities")
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)

@@ -1,24 +1,37 @@
 {% extends "layout.html" %}
 {% load static %}
-{# Vista principal del tablero Kanban con actividad, filtros, columnas y miembros. #}
+{# Uso esta vista principal del tablero Kanban con actividad, filtros, columnas y miembros. #}
 
 {% block content %}
-{# Cabecera del tablero + acción para crear listas (según rol). #}
+{# Muestro cabecera del tablero y acción para crear listas según rol. #}
 <div class="mb-4">
     <div class="d-flex justify-content-between align-items-start mb-2">
         <div>
             <h2 class="fw-bold text-dark mb-0">{{ board.title }}</h2>
             <p class="text-muted small mb-0">{{ board.description|default:"Sin descripción." }}</p>
         </div>
-        {% if user_role != "viewer" %}
-        <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#listModal">
-            <i class="bi bi-plus-lg me-1"></i>Añadir Lista
-        </button>
-        {% endif %}
+        <div class="d-flex align-items-center gap-2">
+            {% if user_role == "owner" %}
+            <a href="{% url 'boards:board_edit' board.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="bi bi-pencil-square me-1"></i>Editar tablero
+            </a>
+            <form method="post" action="{% url 'boards:board_delete' board.id %}" onsubmit="return confirm('¿Eliminar tablero y todo su contenido?');" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                    <i class="bi bi-trash3 me-1"></i>Eliminar tablero
+                </button>
+            </form>
+            {% endif %}
+            {% if user_role != "viewer" %}
+            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#listModal">
+                <i class="bi bi-plus-lg me-1"></i>Añadir Lista
+            </button>
+            {% endif %}
+        </div>
     </div>
 
     <div class="section-box mt-3 mb-4">
-        {# Indicador de progreso global calculado en la vista. #}
+        {# Muestro el indicador de progreso global calculado en la vista. #}
         <div class="d-flex justify-content-between align-items-end mb-1">
             <span class="section-title extra-small fw-bold text-muted text-uppercase">
                 <i class="bi bi-speedometer2"></i>Progreso del Tablero
@@ -33,7 +46,7 @@
     </div>
 
     {% if user_role == "owner" %}
-    {# Gestión de invitaciones: solo visible para el propietario. #}
+    {# Gestiono invitaciones, visible solo para el propietario. #}
     <div class="section-box mb-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
             <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
@@ -78,7 +91,7 @@
 
     <div class="board-layout">
     <div class="board-left">
-    {# Panel de actividad con filtro por tipo y paginación. #}
+    {# Muestro panel de actividad con filtro por tipo y paginación. #}
     <div class="section-box mb-4 activity-panel">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
             <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
@@ -151,7 +164,7 @@
     <div class="board-resizer" aria-hidden="true"></div>
      
     <div class="board-right">
-    {# Bloque de filtros (tags, texto, estado, prioridad) y exportaciones. #}
+    {# Muestro bloque de filtros (tags, texto, estado, prioridad) y exportaciones. #}
     <div class="section-box mb-4">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <div class="section-title text-uppercase text-muted extra-small fw-bold mb-0">
@@ -226,7 +239,7 @@
         </div>
     </div>
 
-    {# Columnas Kanban y tarjetas de tareas. #}
+    {# Renderizo columnas Kanban y tarjetas de táreas. #}
     <div class="kanban-wrapper">
     {% for list in board_lists %}
     <div class="kanban-column shadow-sm"
@@ -347,7 +360,7 @@
     </div>
 </div>
 
-    {# Administración de miembros y roles del tablero. #}
+    {# Administro miembros y roles del tablero. #}
     <div class="section-box mt-4 mb-4">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="section-title text-uppercase text-muted small fw-bold mb-0">
@@ -403,6 +416,6 @@
     </div>
 </div>
 
-{# Modales desacoplados para crear/editar tareas y listas. #}
+{# Incluyo modales desacoplados para crear y editar táreas y listas. #}
 {% include "boards/_modals.html" %}
 {% endblock %}

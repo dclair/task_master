@@ -13,9 +13,9 @@ from .models import Board, TaskList, Task, UserProfile
 
 
 # ---------------------------------------------------------------------
-# Formularios de tablero y autenticación
+# Aquí agrupo formularios de tablero y autenticación
 # ---------------------------------------------------------------------
-# Formulario para crear un Tablero
+# Uso este formulario para crear o editar tableros.
 class BoardForm(forms.ModelForm):
     class Meta:
         model = Board
@@ -55,7 +55,7 @@ class SignUpForm(UserCreationForm):
         }
 
 
-# Bloquea login de cuentas sin activar.
+# Bloqueo el login cuando la cuenta aun no esta activada.
 class CustomAuthenticationForm(AuthenticationForm):
     def confirm_login_allowed(self, user):
         if not user.is_active:
@@ -66,7 +66,7 @@ class CustomAuthenticationForm(AuthenticationForm):
 
 
 # ---------------------------------------------------------------------
-# Formularios de perfil
+# Aquí agrupo formularios de perfil
 # ---------------------------------------------------------------------
 class ProfileForm(forms.ModelForm):
     MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
@@ -105,7 +105,7 @@ class ProfileForm(forms.ModelForm):
         if not avatar:
             return avatar
 
-        # Si no es un upload nuevo (ej. imagen existente en perfil), no forzamos validación MIME.
+        # Si no hay upload nuevo, no fuerzo validacion MIME.
         if not hasattr(avatar, "content_type"):
             return avatar
 
@@ -133,7 +133,7 @@ class ProfileForm(forms.ModelForm):
         return profile
 
 
-# Actualiza datos base del usuario (tabla auth_user).
+# Actualizo datos base del usuario (tabla auth_user).
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
@@ -158,7 +158,7 @@ class UserUpdateForm(forms.ModelForm):
         return username
 
 
-# Formulario custom para reset: exige coincidencia usuario + email.
+# Uso este formulario de reset para exigir coincidencia usuario + email.
 class CustomPasswordResetForm(PasswordResetForm):
     username = forms.CharField(
         label="Nombre de usuario",
@@ -225,9 +225,9 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 
 # ---------------------------------------------------------------------
-# Formularios Kanban: listas y tareas
+# Aquí agrupo formularios Kanban de listas y tareas
 # ---------------------------------------------------------------------
-# Formulario para crear una Lista de Tareas
+# Uso este formulario para crear listas de tareas.
 class TaskListForm(forms.ModelForm):
     class Meta:
         model = TaskList
@@ -242,7 +242,7 @@ class TaskListForm(forms.ModelForm):
         }
 
 
-# Formulario para crear una Tarea
+# Uso este formulario para crear tareas.
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
@@ -256,7 +256,7 @@ class TaskForm(forms.ModelForm):
             "due_date": forms.DateTimeInput(
                 attrs={
                     "class": "form-control rounded-pill",
-                    "type": "datetime-local",  # Esto hace que aparezca el calendario del navegador
+                    "type": "datetime-local",  # Uso este tipo para mostrar el selector nativo del navegador.
                 }
             ),
         }

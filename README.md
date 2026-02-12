@@ -9,6 +9,7 @@ Gestor de tareas estilo Trello con tableros, listas, tareas movibles, etiquetas,
 - Activación de cuenta por email con expiración y reenvío.
 - Restablecimiento de contraseña con emails personalizados.
 - Tableros y listas con orden visual y drag & drop (SortableJS).
+- CRUD completo de tableros (crear, ver, editar y eliminar).
 - Tareas con prioridad, etiquetas, fecha límite, descripción.
 - Asignación de tareas a múltiples usuarios (solo miembros del tablero).
 - Progreso general del tablero.
@@ -35,7 +36,7 @@ Gestor de tareas estilo Trello con tableros, listas, tareas movibles, etiquetas,
 
 ## Roles
 
-- **Owner**: control total (gestión de miembros, invitaciones, editar).
+- **Owner**: control total (gestión de miembros, invitaciones, editar y eliminar tablero).
 - **Editor**: puede crear/editar/mover tareas y listas.
 - **Viewer**: solo lectura.
 
@@ -134,7 +135,7 @@ SITE_URL=https://tudominio.com
 Se envían con un comando programable:
 
 ```bash
-python manage.py send_task_due_notifications
+python3 manage.py send_task_due_notifications
 ```
 
 Recomendado: ejecutar cada hora con cron.
@@ -166,6 +167,8 @@ env/bin/gunicorn core.wsgi:application --bind 0.0.0.0:8000
 - `/` home pública (redirige a tableros si hay sesión iniciada)
 - `/boards/` lista de tableros (zona app)
 - `/boards/<id>/` detalle del tablero
+- `/boards/<id>/edit/` editar tablero (owner)
+- `/boards/<id>/delete/` eliminar tablero (owner, POST)
 - `/boards/profile/` perfil
 - `/accounts/login/`
 - `/accounts/password_reset/`
@@ -178,6 +181,14 @@ env/bin/gunicorn core.wsgi:application --bind 0.0.0.0:8000
 - CSV: `/boards/<id>/export/csv/`
 - JSON: `/boards/<id>/export/json/`
 - Actividad: `/boards/<id>/export/activity/`
+
+## Testing
+
+Pruebas básicas incluidas para permisos de CRUD de tableros:
+
+```bash
+python3 manage.py test boards
+```
 
 ## Notas
 

@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
-{# Vista de inicio de tableros: listado de proyectos del usuario. #}
+{# Uso esta vista de inicio de tableros: listado de proyectos del usuario. #}
 
 {% block head_title %}Mis Tableros | Task Master{% endblock %}
 
 {% block content %}
-{# Encabezado de la pantalla y CTA para crear tablero. #}
+{# Muestro encabezado de la pantalla y CTA para crear tablero. #}
 <div class="d-flex justify-content-between align-items-center mb-5">
     <div>
         <h2 class="fw-800 mb-0">Mis Tableros</h2>
@@ -15,7 +15,7 @@
     </a>
 </div>
 
-{# Grid de tarjetas de tableros existentes. #}
+{# Muestro grid de tarjetas de tableros existentes. #}
 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
     {% for board in boards %}
     <div class="col">
@@ -35,15 +35,28 @@
                     <div class="text-muted extra-small">
                         <i class="bi bi-calendar3 me-1"></i> {{ board.created_at|date:"d M, Y" }}
                     </div>
-                    <a href="{% url 'boards:board_detail' board.pk %}" class="btn btn-sm btn-light rounded-pill border" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                        Abrir <i class="bi bi-arrow-right ms-1"></i>
-                    </a>
+                    <div class="d-flex align-items-center gap-2">
+                        {% if board.owner_id == user.id %}
+                        <a href="{% url 'boards:board_edit' board.pk %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                            Editar
+                        </a>
+                        <form method="post" action="{% url 'boards:board_delete' board.pk %}" onsubmit="return confirm('¿Eliminar tablero y todo su contenido?');" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                Eliminar
+                            </button>
+                        </form>
+                        {% endif %}
+                        <a href="{% url 'boards:board_detail' board.pk %}" class="btn btn-sm btn-light rounded-pill border">
+                            Abrir <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     {% empty %}
-    {# Estado vacío cuando todavía no hay tableros creados. #}
+    {# Muestro estado vacío cuando todavía no hay tableros creados. #}
     <div class="col-12 text-center py-5">
         <div class="bg-white p-5 rounded-4 shadow-sm border border-dashed">
             <i class="bi bi-layout-three-columns display-1 text-muted opacity-25"></i>

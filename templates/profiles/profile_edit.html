@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
-{# Formulario de edición de perfil y preferencias de notificaciones. #}
+{# Uso este formulario de edición de perfil y preferencias de notificaciones. #}
 
 {% block head_title %}Editar Perfil | Task Master{% endblock %}
 
 {% block content %}
-{# Combina campos de usuario (auth) y campos de perfil extendido. #}
+{# Combino campos de usuario (auth) y campos de perfil extendido. #}
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
         <div class="card border-0 shadow-sm" style="border-radius: 18px;">
@@ -67,7 +67,7 @@
                         {% endif %}
                     </div>
                     {% if profile_form.instance.pending_email %}
-                    {# Aviso cuando hay un cambio de email pendiente de confirmación. #}
+                    {# Muestro aviso cuando hay un cambio de email pendiente de confirmación. #}
                     <div class="alert alert-info py-2 small mb-3">
                         Tienes un cambio de email pendiente: <strong>{{ profile_form.instance.pending_email }}</strong>.
                         Revisa tu bandeja de entrada para confirmarlo.

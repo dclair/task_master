@@ -1,1 +1,1 @@
-# Package marker for management commands.
+# Marco este paquete para organizar los módulos de management de la app.

@@ -89,7 +89,7 @@
       return;
     }
 
-    // reject: intentamos minimizar persistencia eliminando cookies opcionales y de sesión.
+    // Si eligen rechazo, borro cookies opcionales y de sesión para minimizar persistencia.
     deleteCookie(OPTIONAL_COOKIE);
     deleteCookie("_ga");
     deleteCookie(CSRF_COOKIE);
@@ -104,7 +104,7 @@
     if (isAuthenticated) {
       const logoutForm = document.querySelector('form[action*="/accounts/logout"]');
       if (logoutForm) {
-        // Cerramos sesión para aplicar la elección de no mantener cookies de sesión.
+        // Fuerzo logout para aplicar la decisión de no conservar cookies de sesión.
         setTimeout(() => logoutForm.submit(), 900);
       }
     }
@@ -122,8 +122,7 @@
         return;
       }
 
-      // Para usuarios autenticados, si no hay preferencia en backend
-      // mostramos banner siempre (evita heredar decisiones de otra cuenta en el mismo navegador).
+      // Si no encuentro preferencia en backend, muestro banner siempre para no heredar decisiones.
       showBanner();
       return;
     }
@@ -144,7 +143,7 @@
       await syncChoiceToBackend(choice);
       applyChoice(choice);
 
-      // Damos tiempo a mostrar nota en rechazo antes de ocultar (si no hay logout).
+      // Espero un poco para que se lea la nota de rechazo antes de ocultar el banner.
       if (choice === "reject" && !isAuthenticated) {
         setTimeout(hideBanner, 1200);
       } else if (choice !== "reject") {

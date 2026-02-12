@@ -1,5 +1,5 @@
 {% load static %}
-{# Header principal: branding, navegación contextual y acciones de sesión. #}
+{# Uso este header principal: branding, navegación contextual y acciones de sesión. #}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 shadow-sm">
     <div class="container">
         <a class="navbar-brand fw-800 fs-4 d-flex align-items-center gap-2" href="{% url 'home' %}">
@@ -12,7 +12,7 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-            {# Menú principal solo para usuarios autenticados. #}
+            {# Muestro menú principal solo para usuarios autenticados. #}
             <ul class="navbar-nav me-auto">
                 {% if user.is_authenticated %}
                 <li class="nav-item">
@@ -28,7 +28,7 @@
                 {% endif %}
             </ul>
 
-            {# Área derecha: identidad del usuario y login/logout. #}
+            {# Muestro área derecha con identidad del usuario y login/logout. #}
             <ul class="navbar-nav ms-auto align-items-center gap-2">
                 {% if user.is_authenticated %}
                     <li class="nav-item text-white-50 me-2 small">

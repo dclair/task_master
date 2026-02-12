@@ -6,10 +6,12 @@ from boards.utils import build_board_url
 from boards.views import send_task_due_soon_email, send_task_overdue_email
 
 
+# Expongo este comando para que pueda ejecutarse por cron y enviar avisos de vencimiento.
 class Command(BaseCommand):
     help = "Envia notificaciones por vencimiento de tareas (próximas y vencidas)."
 
     def handle(self, *args, **options):
+        # Tomo una ventana de 24h para avisos "por vencer" y separo también las vencidas.
         now = timezone.now()
         soon_limit = now + timezone.timedelta(hours=24)
 
@@ -31,6 +33,7 @@ class Command(BaseCommand):
         due_soon_sent = 0
         overdue_sent = 0
 
+        # Recorro tareas próximas y solo notifico a usuarios asignados con opt-in activo.
         for task in due_soon_qs:
             board_url = build_board_url(task.task_list.board_id)
             sent_any = False
@@ -45,6 +48,7 @@ class Command(BaseCommand):
                 task.due_soon_notified_at = now
                 task.save(update_fields=["due_soon_notified_at"])
 
+        # Recorro tareas ya vencidas y marco timestamp para evitar duplicar avisos.
         for task in overdue_qs:
             board_url = build_board_url(task.task_list.board_id)
             sent_any = False

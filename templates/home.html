@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 {% load static %}
-{# Landing pública de Task Master para usuarios no autenticados. #}
+{# Uso esta landing pública de Task Master para usuarios no autenticados. #}
 
 {% block head_title %}TaskMaster | Organiza tu trabajo en equipo{% endblock %}
 
 {% block content %}
-{# Hero principal más visual: mensaje, CTA y preview del producto. #}
+{# Muestro hero principal visual con mensaje, CTA y preview del producto. #}
 <section class="home-hero position-relative overflow-hidden rounded-4 p-4 p-md-5 mb-4">
     <div class="hero-blob hero-blob-a" aria-hidden="true"></div>
     <div class="hero-blob hero-blob-b" aria-hidden="true"></div>
@@ -60,7 +60,7 @@
     </div>
 </section>
 
-{# Carrusel demo 16:9 para mostrar pantallas de la app. #}
+{# Muestro carrusel demo 16:9 para presentar pantallas de la app. #}
 <section class="home-showcase mb-4">
     <div id="taskmasterShowcase" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4500">
         <div class="carousel-indicators">
@@ -73,25 +73,25 @@
         <div class="carousel-inner">
             <div class="carousel-item active">
                 <div class="showcase-frame">
-                    <img src="{% static 'img/hero-img.png' %}" class="d-block w-100 showcase-image" alt="Vista general de tableros">
+                    <img src="{% static 'img/hero-img0.png' %}" class="d-block w-100 showcase-image" alt="Vista general de tableros">
                     <div class="showcase-caption">Vista general de tableros</div>
                 </div>
             </div>
             <div class="carousel-item">
                 <div class="showcase-frame">
-                    <img src="{% static 'img/hero-img.png' %}" class="d-block w-100 showcase-image" alt="Gestión de tareas en Kanban">
+                    <img src="{% static 'img/hero-img1.png' %}" class="d-block w-100 showcase-image" alt="Gestión de tareas en Kanban">
                     <div class="showcase-caption">Gestión de tareas en Kanban</div>
                 </div>
             </div>
             <div class="carousel-item">
                 <div class="showcase-frame">
-                    <img src="{% static 'img/hero-img.png' %}" class="d-block w-100 showcase-image" alt="Asignación y colaboración de equipo">
+                    <img src="{% static 'img/hero-img2.jpg' %}" class="d-block w-100 showcase-image" alt="Asignación y colaboración de equipo">
                     <div class="showcase-caption">Asignación y colaboración de equipo</div>
                 </div>
             </div>
             <div class="carousel-item">
                 <div class="showcase-frame">
-                    <img src="{% static 'img/hero-img.png' %}" class="d-block w-100 showcase-image" alt="Seguimiento del progreso">
+                    <img src="{% static 'img/hero-img3.jpg' %}" class="d-block w-100 showcase-image" alt="Seguimiento del progreso">
                     <div class="showcase-caption">Seguimiento del progreso</div>
                 </div>
             </div>
@@ -108,7 +108,7 @@
     </div>
 </section>
 
-{# Beneficios destacados para explicar el valor de la app. #}
+{# Muestro beneficios destacados para explicar el valor de la app. #}
 <section class="py-2 pb-4">
     <div class="row g-3">
         <div class="col-md-4">
