@@ -13,6 +13,7 @@ Gestor de tareas estilo Trello con tableros, listas, tareas movibles, etiquetas,
 - Tareas con prioridad, etiquetas, fecha límite, descripción.
 - Asignación de tareas a múltiples usuarios (solo miembros del tablero).
 - Progreso general del tablero.
+- Filtro principal "Mis tareas" para mostrar solo las tareas asignadas al usuario.
 - Búsqueda y filtros por tags y prioridad.
 - Filtro por estado (por hacer / en proceso / completadas).
 - Paginación por lista (10 tareas por página).
