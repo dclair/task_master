@@ -37,7 +37,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let activePriority = null;
     let activeStatus = null;
+    let activeMineOnly = false;
     let searchTerm = '';
+    const mineFilter = document.querySelector('.mine-filter');
+    const currentUserId = mineFilter ? (mineFilter.getAttribute('data-user-id') || '') : '';
     const TASKS_PAGE_SIZE = 10;
 
     // Aplico paginación por columna para no renderizar listas largas de una vez.
@@ -83,10 +86,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const desc = card.getAttribute('data-desc') || '';
                 const text = (title + desc).toLowerCase();
                 const prio = (card.getAttribute('data-prio') || '').toLowerCase();
+                const assignedIds = (card.getAttribute('data-assigned') || '').split(',').filter(Boolean);
 
                 const matchesSearch = !searchTerm || text.includes(searchTerm);
                 const matchesPriority = !activePriority || prio.includes(activePriority);
-                card.classList.toggle('filter-hidden', !(matchesSearch && matchesPriority));
+                const matchesMine = !activeMineOnly || (currentUserId && assignedIds.includes(currentUserId));
+                card.classList.toggle('filter-hidden', !(matchesSearch && matchesPriority && matchesMine));
             });
             column.setAttribute('data-page', '1');
             updatePagination(column);
@@ -266,6 +271,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Activo filtro para mostrar solo tareas donde el usuario actual esta asignado.
+    if (mineFilter) {
+        const activateMine = () => {
+            activeMineOnly = !activeMineOnly;
+            mineFilter.classList.toggle('active', activeMineOnly);
+            mineFilter.setAttribute('aria-pressed', activeMineOnly ? 'true' : 'false');
+            applyFilters();
+            updateStatusSummary();
+        };
+        mineFilter.addEventListener('click', activateMine);
+        mineFilter.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                activateMine();
+            }
+        });
+    }
 
     // Permito redimensionar el panel de actividad mediante arrastre (desktop y touch).
     const resizer = document.querySelector('.board-resizer');
