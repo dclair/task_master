@@ -4,6 +4,7 @@ Gestor de tareas estilo Trello con tableros, listas, tareas movibles, etiquetas,
 
 ## Funcionalidades
 
+- Home pública tipo landing (`/`) con hero y carrusel.
 - Registro, login y logout.
 - Activación de cuenta por email con expiración y reenvío.
 - Restablecimiento de contraseña con emails personalizados.
@@ -21,9 +22,16 @@ Gestor de tareas estilo Trello con tableros, listas, tareas movibles, etiquetas,
 - Gestión de miembros y roles (owner/editor/viewer).
 - Invitaciones por email con aceptación y caducidad.
 - Perfil de usuario con avatar, bio y preferencias de notificaciones.
+- Preferencia de cookies por usuario (persistida en backend para cuentas autenticadas).
 - Notificaciones por email cuando te asignan una tarea (opt‑in por perfil).
 - Notificaciones por email de vencimiento (próximas y vencidas) y cambio de estado.
 - Cambio de email con verificación por enlace.
+- Páginas legales estáticas: aviso legal, privacidad y cookies.
+- Footer extendido con navegación, legal y accesos de cuenta.
+- Banner de cookies con 3 opciones:
+  - Aceptar todas
+  - Solo imprescindibles
+  - Rechazar todas (puede afectar sesión/formularios)
 
 ## Roles
 
@@ -49,6 +57,7 @@ Plantillas HTML con logo embebido:
 - SQLite (por defecto)
 - Bootstrap 5 + Bootstrap Icons
 - SortableJS
+- JavaScript vanilla (banner de cookies y UX del tablero)
 - SMTP (Gmail en dev)
 
 ## Instalación rápida
@@ -107,6 +116,19 @@ EMAIL_PASS=tu_app_password
 SITE_URL=https://tudominio.com
 ```
 
+## Cumplimiento y cookies
+
+- Banner de consentimiento visible hasta que el usuario elige una opción.
+- Para usuarios autenticados, la preferencia se guarda en backend (`UserProfile.cookie_consent`)
+  con fecha de actualización (`cookie_consent_updated_at`).
+- Endpoint interno de preferencia:
+  - `GET /accounts/cookie-consent/`
+  - `POST /accounts/cookie-consent/` (JSON: `{ "choice": "all|essential|reject" }`)
+- Páginas legales disponibles en:
+  - `/legal/aviso-legal/`
+  - `/legal/privacidad/`
+  - `/legal/cookies/`
+
 ## Notificaciones por vencimiento
 
 Se envían con un comando programable:
@@ -141,11 +163,15 @@ env/bin/gunicorn core.wsgi:application --bind 0.0.0.0:8000
 
 ## Rutas útiles
 
-- `/boards/` lista de tableros
+- `/` home pública (redirige a tableros si hay sesión iniciada)
+- `/boards/` lista de tableros (zona app)
 - `/boards/<id>/` detalle del tablero
 - `/boards/profile/` perfil
 - `/accounts/login/`
 - `/accounts/password_reset/`
+- `/legal/aviso-legal/`
+- `/legal/privacidad/`
+- `/legal/cookies/`
 
 ## Exportación
 
