@@ -3,7 +3,6 @@ import os  # Uso os para facilitar carga de rutas y variables de entorno.
 from django.contrib.messages import constants as messages
 import dj_database_url
 
-
 # Construyo rutas base del proyecto a partir de BASE_DIR.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -22,23 +21,19 @@ def load_env(path):
             os.environ.setdefault(key, value)
 
 
+# Carga variables desde .env local (solo desarrollo)
 load_env(BASE_DIR / ".env")
 
-
-# Mantengo esta configuración pensada para desarrollo, no para producción.
-# Referencia: https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# En producción debo proteger SECRET_KEY y gestionarla por entorno.
-SECRET_KEY = "django-insecure-@j_p^q%1!o1_a%qpg1cfgz83+7!-xnyo_b7&8py@72rim8m4^n"
-
-# En producción debo desactivar DEBUG.
-DEBUG = False
-
+# -----------------------------
+# CLAVES Y DEBUG
+# -----------------------------
+SECRET_KEY = os.environ.get("SECRET_KEY", "unsafe-default-key")
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 ALLOWED_HOSTS = [".onrender.com"]
 
-
-# Defino aquí las aplicaciones instaladas.
-
+# -----------------------------
+# APPS INSTALADAS
+# -----------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -49,15 +44,18 @@ INSTALLED_APPS = [
     "boards",
 ]
 
+# -----------------------------
+# MIDDLEWARE
+# -----------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # WhiteNoise para staticfiles
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -65,8 +63,7 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # Indico que Django busque plantillas tambien en la carpeta global templates.
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BASE_DIR / "templates"],  # Carpeta global templates
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -81,97 +78,71 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
+# -----------------------------
+# BASE DE DATOS
+# -----------------------------
+DATABASES = {"default": dj_database_url.config(default=os.environ.get("DATABASE_URL"))}
 
-# Defino la base de datos por defecto.
-# Referencia: https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {"default": dj_database_url.config(default=os.getenv("DATABASE_URL"))}
-
-
-# Defino validadores de contraseña.
-# Referencia: https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
+# -----------------------------
+# VALIDADORES DE CONTRASEÑA
+# -----------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
-# Defino idioma y configuración de internacionalización.
-# Referencia: https://docs.djangoproject.com/en/4.2/topics/i18n/
-
-# Ajusto idioma a español y mantengo zona horaria configurada.
+# -----------------------------
+# INTERNACIONALIZACIÓN
+# -----------------------------
 LANGUAGE_CODE = "es-es"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Defino archivos estaticos (CSS, JavaScript e imágenes).
-# Referencia: https://docs.djangoproject.com/en/4.2/howto/static-files/
-
+# -----------------------------
+# STATIC FILES
+# -----------------------------
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# defino carpeta raiz de archivos estaticos
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
-# Declaro carpeta global de estaticos.
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-# Repito STATICFILES_DIRS para asegurar deteccion de carpeta static global.
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
-# Defino archivos subidos por usuario (media).
+# -----------------------------
+# MEDIA FILES
+# -----------------------------
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Defino el tipo de clave primaria por defecto.
-# Referencia: https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
+# -----------------------------
+# CLAVE PRIMARIA POR DEFECTO
+# -----------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Configuro redirecciones de autenticación.
+# -----------------------------
+# LOGIN / LOGOUT
+# -----------------------------
 LOGIN_REDIRECT_URL = "boards:board_list"
 LOGOUT_REDIRECT_URL = "login"
 
-# Configuro expiración del token de activación (segundos).
+# -----------------------------
+# TOKENS
+# -----------------------------
 ACTIVATION_TOKEN_TIMEOUT = 60 * 60 * 24  # 24 horas
-
-# Configuro expiración del token de invitación (segundos).
 INVITE_TOKEN_TIMEOUT = 60 * 60 * 24 * 7  # 7 días
 
-# Defino el correo remitente para emails salientes.
-DEFAULT_FROM_EMAIL = os.getenv("EMAIL_USER")
-
-# Defino el correo de contacto que recibe mensajes.
-CONTACT_EMAIL = os.getenv("EMAIL_USER")
-
+# -----------------------------
+# CORREO SMTP (Gmail)
+# -----------------------------
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-DEFAULT_FROM_EMAIL = os.getenv("EMAIL_USER")
-SERVER_EMAIL = os.getenv("EMAIL_USER")
-# Configuro servidor SMTP de Gmail.
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
-# Cargo credenciales SMTP desde variables de entorno.
-EMAIL_HOST_USER = os.getenv("EMAIL_USER")
-EMAIL_HOST_PASSWORD = os.getenv(
-    "EMAIL_PASS"
-)  # Uso la variable EMAIL_PASS desde el entorno.
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.environ.get("EMAIL_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASS")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+CONTACT_EMAIL = EMAIL_HOST_USER
