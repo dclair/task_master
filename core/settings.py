@@ -1,6 +1,7 @@
 from pathlib import Path
 import os  # Uso os para facilitar carga de rutas y variables de entorno.
 from django.contrib.messages import constants as messages
+import dj_database_url
 
 
 # Construyo rutas base del proyecto a partir de BASE_DIR.
@@ -31,9 +32,9 @@ load_env(BASE_DIR / ".env")
 SECRET_KEY = "django-insecure-@j_p^q%1!o1_a%qpg1cfgz83+7!-xnyo_b7&8py@72rim8m4^n"
 
 # En producción debo desactivar DEBUG.
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [".onrender.com"]
 
 
 # Defino aquí las aplicaciones instaladas.
@@ -56,6 +57,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -83,12 +85,7 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Defino la base de datos por defecto.
 # Referencia: https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+DATABASES = {"default": dj_database_url.config(default=os.getenv("DATABASE_URL"))}
 
 
 # Defino validadores de contraseña.
@@ -127,6 +124,9 @@ USE_TZ = True
 # Referencia: https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+
+# defino carpeta raiz de archivos estaticos
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Declaro carpeta global de estaticos.
 STATICFILES_DIRS = [
@@ -172,4 +172,6 @@ EMAIL_USE_TLS = True
 
 # Cargo credenciales SMTP desde variables de entorno.
 EMAIL_HOST_USER = os.getenv("EMAIL_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASS")  # Uso la variable EMAIL_PASS desde el entorno.
+EMAIL_HOST_PASSWORD = os.getenv(
+    "EMAIL_PASS"
+)  # Uso la variable EMAIL_PASS desde el entorno.
